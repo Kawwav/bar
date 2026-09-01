@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Londrina+Shadow&display=swap');
+.cardapio-scroll-container {
+  position: relative;
+  height: 400vh;
+}
+
+.cardapio-section {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 100vh;
+  width: 100%;
+  background: #FFF4E2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cardapio-title {
+  font-family: 'Londrina Shadow', cursive;
+  color: #d40000;
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
+  font-size: 460px;
+  letter-spacing: 0.02em;
+  margin: 0;
+  will-change: transform;
+}
+
+/* Camada de ENTRADA: opacidade + subida, lenta e extremamente suave */
+.cardapio-letra-entrada {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.8em);
+  transition:
+    opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cardapio-letra-entrada--visivel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Camada de ESQUIVA: reage ao mouse, some suavemente quando ele se afasta */
+.cardapio-letra-esquiva {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.cardapio-quadrados {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, min-content);
+  grid-auto-rows: min-content;
+  align-content: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 10vh 24px;
+  box-sizing: border-box;
+}
+
+.cardapio-quadrado {
+  position: relative;
+  width: min(220px, 26vw, calc((80vh - 24px) / 2));
+  height: min(220px, 26vw, calc((80vh - 24px) / 2));
+  background: #d40000;
+  border-radius: 16px;
+  transform-origin: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardapio-quadrado--central {
+  grid-column: 2;
+}
+
+.cardapio-quadrado-texto {
+  font-family: 'Londrina Shadow', cursive;
+  color: #FFF4E2;
+  text-transform: uppercase;
+  text-align: center;
+  font-size: clamp(18px, 3vw, 34px);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 0 8px;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .cardapio-quadrados {
+    grid-template-columns: repeat(2, min-content);
+    padding: 8vh 16px;
+  }
+
+  .cardapio-quadrado--central {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .cardapio-quadrado {
+    width: min(38vw, calc((84vh - 24px) / 3));
+    height: min(38vw, calc((84vh - 24px) / 3));
+  }
+}
