@@ -3,6 +3,10 @@ import Comeco from './paginas/comeco'
 import Cardapio from './paginas/cardapio'
 import Fotos from './paginas/fotos'
 
+//git add .
+//git commit -m ""
+//git branch -M main
+
 function App() {
   const targetRef = useRef(0)
   const [displayProgress, setDisplayProgress] = useState(0)
