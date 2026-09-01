@@ -3,6 +3,7 @@ import Comeco from './paginas/comeco'
 import Cardapio from './paginas/cardapio'
 import Fotos from './paginas/fotos'
 
+//npm run build
 //git add .
 //git commit -m ""
 //git branch -M main
