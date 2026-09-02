@@ -1,43 +1,51 @@
 import { useState, useEffect, useRef } from 'react'
 import './comeco.css'
 
-const videos = [
-  '/1.mp4',
-  '/2.mp4',
-  '/3.mp4',
-]
+const videos = ['1.mp4', '2.mp4', '3.mp4']
 
 const INTERVAL = 4000
+const WELCOME_HOLD = 3000
+const CURTAIN_DURATION = 900
+const FULLSCREEN_HOLD = 1400
 
 function Comeco({ scale = 1, blur = 0 }) {
-  const [current, setCurrent] = useState(0)
   const [welcomeState, setWelcomeState] = useState('visible')
+  // 'full' = vídeo ocupando a tela inteira | 'boxed' = retângulo com textos
+  const [stageMode, setStageMode] = useState('full')
   const videoARef = useRef(null)
   const videoBRef = useRef(null)
   const [activeSlot, setActiveSlot] = useState('a')
   const timerRef = useRef(null)
   const nextIndexRef = useRef(1)
 
-  // Bloqueia o scroll enquanto a tela de boas-vindas estiver visível ou subindo
+  // Bloqueia o scroll enquanto a cortina estiver visível ou subindo
   useEffect(() => {
     if (welcomeState === 'visible' || welcomeState === 'leaving') {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
     }
-
     return () => {
       document.body.style.overflow = ''
     }
   }, [welcomeState])
 
-  // Tela de boas-vindas: aguarda 3s, depois sobe
+  // Cortina azul sobe -> vídeo em tela cheia -> vira retângulo
   useEffect(() => {
     const hold = setTimeout(() => {
       setWelcomeState('leaving')
-      setTimeout(() => setWelcomeState('gone'), 900)
-    }, 3000)
-    return () => clearTimeout(hold)
+      setTimeout(() => setWelcomeState('gone'), CURTAIN_DURATION)
+    }, WELCOME_HOLD)
+
+    const shrink = setTimeout(
+      () => setStageMode('boxed'),
+      WELCOME_HOLD + CURTAIN_DURATION + FULLSCREEN_HOLD,
+    )
+
+    return () => {
+      clearTimeout(hold)
+      clearTimeout(shrink)
+    }
   }, [])
 
   // Pré-carrega o próximo vídeo no slot inativo
@@ -64,7 +72,7 @@ function Comeco({ scale = 1, blur = 0 }) {
       const incoming = activeSlot === 'a' ? 'b' : 'a'
       const incomingRef = incoming === 'a' ? videoARef : videoBRef
 
-      incomingRef.current.play().catch(() => {})
+      incomingRef.current?.play().catch(() => {})
       setActiveSlot(incoming)
 
       const afterNext = (next + 1) % videos.length
@@ -75,22 +83,24 @@ function Comeco({ scale = 1, blur = 0 }) {
     return () => clearTimeout(timerRef.current)
   }, [activeSlot])
 
+  const boxed = stageMode === 'boxed'
+
   return (
     <div className="comeco-wrapper">
-
       {welcomeState !== 'gone' && (
-        <div className={`welcome-screen ${welcomeState === 'leaving' ? 'welcome-screen--leaving' : ''}`}>
-          <p className="welcome-text">SEJA BEM VINDO AO KAWWA BAR</p>
+        <div
+          className={`welcome-screen ${welcomeState === 'leaving' ? 'welcome-screen--leaving' : ''}`}
+        >
+          <p className="welcome-text">SEJA BEM VINDO AO <br /> KAWWA BAR</p>
         </div>
       )}
 
       <div
-        className="video-stage"
+        className={`video-stage ${boxed ? 'video-stage--boxed' : ''}`}
         style={{
           transform: `scale(${scale})`,
           filter: `blur(${blur}px)`,
-          transition: 'transform 0.1s linear, filter 0.1s linear',
-          willChange: 'transform, filter',
+          willChange: 'transform, filter, width, height',
         }}
       >
         <video
@@ -108,16 +118,13 @@ function Comeco({ scale = 1, blur = 0 }) {
           loop={false}
         />
 
-        <div className="video-overlay">
+        <div className={`video-overlay ${boxed ? 'video-overlay--visible' : ''}`}>
           <div className="overlay-top">
             <span className="overlay-brand">
               Bar Kaw
+              <span className="letter-with-icon">w</span>
               <span className="letter-with-icon">
-                w
-              </span>
-              <span className="letter-with-icon">
-                <img src="/amor.png" className="amor" alt="" />
-                a
+                <img src="amor.png" className="amor" alt="" />a
               </span>
             </span>
           </div>
@@ -125,16 +132,22 @@ function Comeco({ scale = 1, blur = 0 }) {
           <div className="overlay-center">
             <p className="overlay-slogan">
               <span className="letter-with-icon">
-                <img src="/coracao.png" className="coracao" alt="" />
-                G
+                <img src="coracao.png" className="coracao" alt="" />G
               </span>
               arantimos{' '}
               <span className="letter-with-icon">
-                <img src="/contorno.png" className="contorno" alt="" />
-                diver<span className="accent-wrap"><span className="virar1">s</span>a</span>o
+                <img src="contorno.png" className="contorno" alt="" />
+                diver
+                <span className="accent-wrap">
+                  <span className="virar1">s</span>a
+                </span>
+                o
               </span>{' '}
               do primeiro gole ao{' '}
-              <span className="accent-wrap"><span className="virar">I</span>u</span>ltimo brinde
+              <span className="accent-wrap">
+                <span className="virar">I</span>u
+              </span>
+              ltimo brinde
             </p>
           </div>
 

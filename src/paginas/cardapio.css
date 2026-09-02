@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Londrina+Shadow&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@900&display=swap');
 .cardapio-scroll-container {
   position: relative;
   height: 400vh;
@@ -51,62 +53,245 @@
   will-change: transform;
 }
 
-.cardapio-quadrados {
+/* Stage: cuida só de posição, tamanho e escala (zoom).
+   Não tem borda/sombra, para não ser cortado por nada. */
+.cardapio-imagem-stage {
   position: absolute;
   inset: 0;
+  top: 240px;
+  margin: auto;
   z-index: 20;
-  display: grid;
-  grid-template-columns: repeat(3, min-content);
-  grid-auto-rows: min-content;
-  align-content: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 10vh 24px;
-  box-sizing: border-box;
+  width: min(90vw, 900px);
+  max-height: 85vh;
+  transform-origin: center;
+  will-change: transform, opacity;
 }
 
-.cardapio-quadrado {
+/* Frame: é quem tem a borda + sombra "reais". A largura dele é
+   quem anima (0% -> 100%), por isso a borda/sombra ficam visíveis
+   durante toda a abertura, e não só no final. */
+.cardapio-imagem-frame {
   position: relative;
-  width: min(220px, 26vw, calc((80vh - 24px) / 2));
-  height: min(220px, 26vw, calc((80vh - 24px) / 2));
-  background: #d40000;
-  border-radius: 16px;
-  transform-origin: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 4px solid black;
+  box-shadow: 8px 8px 0 0 black;
+  border-radius: 15px;
+  will-change: width;
+}
+
+/* Imagem interna: sempre no tamanho final, só desloca/redimensiona
+   percentualmente dentro do frame para simular a "cortina" abrindo
+   a partir do centro. */
+.cardapio-imagem-img {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  object-fit: cover;
+  will-change: width, left;
+}
+
+.cardapio-frase {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  z-index: 30;
+  width: min(92vw, 950px);
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 900;
+  font-size: 210px;
+  line-height: 0.9;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: normal;
+  pointer-events: none;
+  transform: translate(-50%, 0);
+}
+
+/* Cada linha (palavra) fica em bloco, uma embaixo da outra */
+.cardapio-frase-linha {
+  display: block;
+  overflow: hidden;
+}
+
+.cardapio-frase-letra {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(60px);
+  will-change: transform, opacity;
+}
+
+/* ---------------------------------------------------------------------
+   Selos decorativos: dois "adesivos" geométricos com texto, um de
+   cada lado da section, próximos da linha central horizontal (um
+   um pouco acima, outro um pouco abaixo).
+--------------------------------------------------------------------- */
+
+.cardapio-selo {
+  position: absolute;
+  z-index: 25;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.cardapio-quadrado--central {
-  grid-column: 2;
-}
-
-.cardapio-quadrado-texto {
-  font-family: 'Londrina Shadow', cursive;
-  color: #FFF4E2;
-  text-transform: uppercase;
   text-align: center;
-  font-size: clamp(18px, 3vw, 34px);
-  letter-spacing: 0.02em;
-  line-height: 1;
-  padding: 0 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #FFF4E2;
+  line-height: 1.15;
   pointer-events: none;
+  user-select: none;
+  box-sizing: border-box;
+  opacity: 0;
+  will-change: opacity, transform;
 }
 
-@media (max-width: 768px) {
-  .cardapio-quadrados {
-    grid-template-columns: repeat(2, min-content);
-    padding: 8vh 16px;
+/* Lado esquerdo, um pouco abaixo da linha central */
+.cardapio-selo-esquerda {
+  left: 3vw;
+  top: 58%;
+  transform:
+    translateY(calc(-50% + var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
+    translateX(var(--selo-parallax-x, 0px))
+    rotate(-9deg)
+    scale(var(--selo-escala, 0.5));
+}
+
+/* Lado direito, um pouco acima da linha central */
+.cardapio-selo-direita {
+  right: 3vw;
+  top: 40%;
+  transform:
+    translateY(calc(-50% + var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
+    translateX(var(--selo-parallax-x, 0px))
+    rotate(8deg)
+    scale(var(--selo-escala, 0.5));
+}
+
+/* Selo 1: meia-lua (semicírculo), tipo etiqueta "HOT STUFF!" */
+.cardapio-selo-meia-lua {
+  width: 220px;
+  height: 112px;
+  background: #d40000;
+  border-radius: 999px 999px 4px 4px;
+  padding: 14px 20px 0;
+  font-size: 24px;
+}
+
+/* Selo 2: explosão/estrela, tipo etiqueta "FULL OF FLAVOUR" */
+.cardapio-selo-estrela {
+  width: 230px;
+  height: 230px;
+  background: #d40000;
+  padding: 0 30px;
+  font-size: 26px;
+  clip-path: polygon(
+    50% 0%, 61% 17%, 79% 8%, 82% 28%, 100% 33%,
+    92% 50%, 100% 67%, 82% 72%, 79% 92%, 61% 83%,
+    50% 100%, 39% 83%, 21% 92%, 18% 72%, 0% 67%,
+    8% 50%, 0% 33%, 18% 28%, 21% 8%, 39% 17%
+  );
+}
+
+@media (max-width: 900px) {
+  .cardapio-selo-meia-lua {
+    width: 140px;
+    height: 72px;
+    font-size: 15px;
+    padding: 10px 12px 0;
   }
 
-  .cardapio-quadrado--central {
-    grid-column: 1 / -1;
-    justify-self: center;
+  .cardapio-selo-estrela {
+    width: 150px;
+    height: 150px;
+    font-size: 16px;
+    padding: 0 18px;
+  }
+}
+
+/* Topo, perto do título — um pouco à esquerda */
+.cardapio-selo-topo {
+  left: 6vw;
+  top: 14%;
+  transform:
+    translateY(calc(-50% + var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
+    translateX(var(--selo-parallax-x, 0px))
+    rotate(-6deg)
+    scale(var(--selo-escala, 0.5));
+}
+
+/* Base, perto da frase final — um pouco à direita */
+.cardapio-selo-base {
+  right: 6vw;
+  bottom: 8%;
+  transform:
+    translateY(calc(var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
+    translateX(var(--selo-parallax-x, 0px))
+    rotate(5deg)
+    scale(var(--selo-escala, 0.5));
+}
+
+/* Selo 3: círculo tipo "carimbo", com borda tracejada */
+.cardapio-selo-circulo {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: #000000;
+  border: 6px dashed #FFF4E2;
+  padding: 0 26px;
+  font-size: 26px;
+}
+
+/* Selo 4: fita/banner com pontas em bico */
+.cardapio-selo-fita {
+  width: 260px;
+  height: 90px;
+  background: #FFC400;
+  color: #000000;
+  padding: 0 30px;
+  font-size: 26px;
+  clip-path: polygon(
+    8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%
+  );
+}
+
+@media (max-width: 900px) {
+  .cardapio-selo-circulo {
+    width: 130px;
+    height: 130px;
+    font-size: 15px;
+    padding: 0 16px;
+    border-width: 4px;
   }
 
-  .cardapio-quadrado {
-    width: min(38vw, calc((84vh - 24px) / 3));
-    height: min(38vw, calc((84vh - 24px) / 3));
+  .cardapio-selo-fita {
+    width: 170px;
+    height: 62px;
+    font-size: 15px;
+    padding: 0 16px;
   }
+}
+
+.cardapio-modelos-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding: 40px 0;
+  background: #FFF4E2;
+}
+
+.cardapio-modelo {
+  width: 300px;
+  height: 300px;
+}
+
+.cardapio-modelo canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }

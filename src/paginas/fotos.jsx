@@ -134,14 +134,14 @@ tl.to(
                 <span className="fotos-linha-mask">
                   <span className="fotos-linha">NOSSOS</span>
                 </span>
-                <img src="/imagem.jpg" alt="Bar Kawwa" className="fotos-img" />
+                <img src="imagem.jpg" alt="Bar Kawwa" className="fotos-img" />
               </span>
 
               <span
                 className="fotos-linha-wrap esquerda"
                 ref={(el) => (linhaRefs.current[1] = el)}
               >
-                <img src="/imagem1.jpg" alt="Bar Kawwa" className="fotos-img" />
+                <img src="imagem1.jpg" alt="Bar Kawwa" className="fotos-img" />
                 <span className="fotos-linha-mask">
                   <span className="fotos-linha">MELHORES</span>
                 </span>
@@ -154,7 +154,7 @@ tl.to(
                 <span className="fotos-linha-mask">
                   <span className="fotos-linha">MOMENTOS</span>
                 </span>
-                <img src="/imagem2.jpg" alt="Bar Kawwa" className="fotos-img" />
+                <img src="imagem2.jpg" alt="Bar Kawwa" className="fotos-img" />
               </span>
             </p>
           </div>
