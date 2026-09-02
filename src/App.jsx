@@ -4,9 +4,11 @@ import Cardapio from './paginas/cardapio'
 import Fotos from './paginas/fotos'
 
 //npm run build
+//npm run deploy
 //git add .
 //git commit -m ""
-//git branch -M main
+//git checkout main
+//git push origin main
 
 function App() {
   const targetRef = useRef(0)
