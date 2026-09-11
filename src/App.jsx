@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Comeco from './paginas/comeco'
 import Cardapio from './paginas/cardapio'
-import Fotos from './paginas/fotos'
+import MaisConteudo from './paginas/maisConteudo'
+import './App.css'
 
 //npm run build
 //npm run deploy
@@ -53,19 +54,20 @@ function App() {
     }
   }, [])
 
-  const scale = 1 - displayProgress * 0.08   // 1 → 0.92
-  const blur  = displayProgress * 4           // 0 → 4px
+  const scale = 1 - displayProgress * 0.08  
+  const blur  = displayProgress * 4           
 
   return (
     <div>
       <div style={{ position: 'relative', height: '100vh' }}>
-        {/* COMECO fica fixo (sticky) enquanto a página rola */}
         <div style={{ position: 'sticky', top: 0, height: '100vh', zIndex: 1 }}>
           <Comeco scale={scale} blur={blur} />
         </div>
       </div>
       <Cardapio />
-      <Fotos />
+      <MaisConteudo />
+
+      <div className="secao-espaco" />
     </div>
   )
 }

@@ -86,17 +86,17 @@ function Comeco({ scale = 1, blur = 0 }) {
   const boxed = stageMode === 'boxed'
 
   return (
-    <div className="comeco-wrapper">
+    <div className="envoltorio">
       {welcomeState !== 'gone' && (
         <div
-          className={`welcome-screen ${welcomeState === 'leaving' ? 'welcome-screen--leaving' : ''}`}
+          className={`boasvindas ${welcomeState === 'leaving' ? 'saindo' : ''}`}
         >
-          <p className="welcome-text">SEJA BEM VINDO AO <br /> KAWWA BAR</p>
+          <p className="texto">SEJA BEM VINDO AO <br /> KAWWA BAR</p>
         </div>
       )}
 
       <div
-        className={`video-stage ${boxed ? 'video-stage--boxed' : ''}`}
+        className={`palco ${boxed ? 'moldurado' : ''}`}
         style={{
           transform: `scale(${scale})`,
           filter: `blur(${blur}px)`,
@@ -105,55 +105,55 @@ function Comeco({ scale = 1, blur = 0 }) {
       >
         <video
           ref={videoARef}
-          className={`video-player ${activeSlot === 'a' ? 'slot--active' : 'slot--hidden'}`}
+          className={`video ${activeSlot === 'a' ? 'ativo' : 'oculto'}`}
           muted
           playsInline
           loop={false}
         />
         <video
           ref={videoBRef}
-          className={`video-player ${activeSlot === 'b' ? 'slot--active' : 'slot--hidden'}`}
+          className={`video ${activeSlot === 'b' ? 'ativo' : 'oculto'}`}
           muted
           playsInline
           loop={false}
         />
 
-        <div className={`video-overlay ${boxed ? 'video-overlay--visible' : ''}`}>
-          <div className="overlay-top">
-            <span className="overlay-brand">
+        <div className={`sobreposicao ${boxed ? 'visivel' : ''}`}>
+          <div className="topo">
+            <span className="marca">
               Bar Kaw
-              <span className="letter-with-icon">w</span>
-              <span className="letter-with-icon">
+              <span className="letra">w</span>
+              <span className="letra">
                 <img src="amor.png" className="amor" alt="" />a
               </span>
             </span>
           </div>
 
-          <div className="overlay-center">
-            <p className="overlay-slogan">
-              <span className="letter-with-icon">
+          <div className="centro">
+            <p className="slogan">
+              <span className="letra">
                 <img src="coracao.png" className="coracao" alt="" />G
               </span>
               arantimos{' '}
-              <span className="letter-with-icon">
+              <span className="letra">
                 <img src="contorno.png" className="contorno" alt="" />
                 diver
-                <span className="accent-wrap">
-                  <span className="virar1">s</span>a
+                <span className="acento">
+                  <span className="giro">s</span>a
                 </span>
                 o
               </span>{' '}
               do primeiro gole ao{' '}
-              <span className="accent-wrap">
-                <span className="virar">I</span>u
+              <span className="acento">
+                <span className="tombo">I</span>u
               </span>
               ltimo brinde
             </p>
           </div>
 
-          <div className="overlay-bottom">
-            <span className="overlay-since">Desde 2004</span>
-            <span className="overlay-location">PR – CWB</span>
+          <div className="rodape">
+            <span className="desde">Desde 2004</span>
+            <span className="local">PR – CWB</span>
           </div>
         </div>
       </div>

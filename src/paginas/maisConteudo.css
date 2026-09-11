@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+
+.mais-conteudo {
+  position: relative; 
+  width: 100%;
+  min-height: 100vh;
+  background: #FFF4E2;
+  padding: 0 6vw 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.mais-conteudo-carrossel-bloco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  scroll-margin-top: 24px;
+}
+
+.mais-conteudo-carrossel-bloco{
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.mais-conteudo-carrossel {
+  width: min(94vw, 1080px);
+  overflow: hidden;
+  padding: 4px;
+  --carrossel-gap: 36px;
+}
+
+.mais-conteudo-carrossel-track {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--carrossel-gap);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Exatamente 3 itens visíveis por vez: cada item ocupa 1/3 do container */
+.mais-conteudo-carrossel-item {
+  flex: 0 0 calc((100% - 2 * var(--carrossel-gap)) / 3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Transição ao trocar de categoria (Bebidas <-> Combos):
+   saindo = imagem e texto caem e somem no "chão";
+   entrando = a imagem vem de cima, nome e preço vêm de baixo. */
+@keyframes mc-cair-sumir {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(120px);
+  }
+}
+
+@keyframes mc-vem-de-cima {
+  0% {
+    opacity: 0;
+    transform: translateY(-90px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mc-vem-de-baixo {
+  0% {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mais-conteudo-carrossel-item--saindo .mais-conteudo-carrossel-frame,
+.mais-conteudo-carrossel-item--saindo .mais-conteudo-carrossel-nome,
+.mais-conteudo-carrossel-item--saindo .mais-conteudo-carrossel-preco {
+  animation: mc-cair-sumir 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation-delay: var(--atraso-transicao, 0ms);
+}
+
+.mais-conteudo-carrossel-item--entrando .mais-conteudo-carrossel-frame {
+  animation: mc-vem-de-cima 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--atraso-transicao, 0ms);
+}
+
+.mais-conteudo-carrossel-item--entrando .mais-conteudo-carrossel-nome,
+.mais-conteudo-carrossel-item--entrando .mais-conteudo-carrossel-preco {
+  animation: mc-vem-de-baixo 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--atraso-transicao, 0ms);
+}
+
+.mais-conteudo-carrossel-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 4px solid black;
+  box-shadow: 8px 8px 0 0 black;
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.mais-conteudo-carrossel-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mais-conteudo-carrossel-img--base {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mais-conteudo-carrossel-img--hover {
+  opacity: 0;
+  transform: scale(1);
+}
+
+.mais-conteudo-carrossel-item:hover .mais-conteudo-carrossel-img--base {
+  opacity: 0;
+}
+
+.mais-conteudo-carrossel-item:hover .mais-conteudo-carrossel-img--hover {
+  opacity: 1;
+  transform: scale(1.22);
+}
+
+.mais-conteudo-carrossel-nome {
+  margin-top: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: clamp(16px, 1.6vw, 22px);
+  line-height: 1.2;
+  color: #000000;
+  text-transform: uppercase;
+}
+
+.mais-conteudo-carrossel-preco {
+  margin-top: 4px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.4vw, 19px);
+  color: #d40000;
+}
+
+.mais-conteudo-carrossel-setas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.mais-conteudo-carrossel-seta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 4px solid #000000;
+  background: #FFF4E2;
+  box-shadow: 5px 5px 0 0 #000000;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mais-conteudo-carrossel-seta svg {
+  width: 22px;
+  height: 22px;
+  stroke: #000000;
+  transition: stroke 0.2s ease;
+}
+
+.mais-conteudo-carrossel-seta:hover:not(:disabled) {
+  background: #d40000;
+  border-color: #d40000;
+  transform: translate(-2px, -2px);
+}
+
+.mais-conteudo-carrossel-seta:hover:not(:disabled) svg {
+  stroke: #FFF4E2;
+}
+
+.mais-conteudo-carrossel-seta:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 0 #000000;
+}
+
+.mais-conteudo-carrossel-seta:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: 3px 3px 0 0 #000000;
+}
+
+@media (max-width: 900px) {
+  .mais-conteudo-carrossel {
+    --carrossel-gap: 18px;
+    width: 96vw;
+  }
+
+  .mais-conteudo-carrossel-setas {
+    gap: 20px;
+  }
+
+  .mais-conteudo-carrossel-seta {
+    width: 46px;
+    height: 46px;
+    border-width: 3px;
+  }
+
+  .mais-conteudo-carrossel-seta svg {
+    width: 18px;
+    height: 18px;
+  }
+}
