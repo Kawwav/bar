@@ -15,40 +15,27 @@ const COMBOS_ITENS = [
   { arquivo: 'combos/combo3.jpg', arquivoHover: 'combos/combovermelho3.jpg', nome: 'Balde Sol', preco: 'R$ 65' },
 ]
 
-// Quantas imagens ficam visíveis por vez em cada carrossel
 const ITENS_VISIVEIS = 3
 
-// Duração (ms) de cada fase da transição ao trocar de categoria.
-// Precisa bater com os tempos de animação em maisConteudo.css
 const DURACAO_SAIDA = 700
 const DURACAO_ENTRADA = 850
-// Atraso (ms) entre um item e o próximo, pra dar aquele efeito de "cascata"
+
 const ATRASO_ENTRE_ITENS = 110
 
-// Carrossel genérico: recebe a lista de itens e cuida sozinho do
-// slide, do índice atual, do hover de cada imagem e da transição
-// de "cair e sumir" / "entrar de cima e de baixo" ao trocar de categoria
 function Carrossel({ itens, labelAnterior, labelProximo }) {
   const trackRef = useRef(null)
   const [indice, setIndice] = useState(0)
-  // itensExibidos é o que está de fato na tela; pode ficar "atrasado" em
-  // relação a `itens` enquanto a animação de saída ainda está rolando
+
   const [itensExibidos, setItensExibidos] = useState(itens)
-  // fase: 'idle' (parado) | 'saindo' (caindo/sumindo) | 'entrando' (chegando)
+
   const [fase, setFase] = useState('idle')
   const itensPendentesRef = useRef(itens)
-  // Guarda qual `itens` já disparou uma transição, pra decidir se um novo
-  // clique no nav deve iniciar outra. Não usar `itensExibidos` aqui: como
-  // o próprio efeito atualiza `itensExibidos`, colocá-lo nas dependências
-  // faz o efeito rodar de novo no meio da transição e o cleanup cancela o
-  // timeout que devolveria a fase pra 'idle' — as setas ficam travadas.
+
   const ultimoItensRef = useRef(itens)
   const timeoutRef = useRef(null)
 
   const indiceMax = Math.max(itensExibidos.length - ITENS_VISIVEIS, 0)
 
-  // Sempre que a categoria muda de verdade, dispara a sequência:
-  // sai a categoria antiga -> troca a lista -> entra a nova
   useEffect(() => {
     if (itens === ultimoItensRef.current) return
     ultimoItensRef.current = itens
@@ -178,8 +165,7 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
 }
 
 export default function MaisConteudo() {
-  // Categoria exibida no carrossel único (padrão: bebidas). Troca quando
-  // o nav do cardapio.jsx dispara o evento "cardapio:categoria".
+
   const [categoriaAtiva, setCategoriaAtiva] = useState('bebidas')
 
   useEffect(() => {

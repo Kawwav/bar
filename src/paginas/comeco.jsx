@@ -8,10 +8,19 @@ const WELCOME_HOLD = 3000
 const CURTAIN_DURATION = 900
 const FULLSCREEN_HOLD = 1400
 
+const CHAVE_INTRO_VISTA = 'kawwa_intro_vista'
+
 function Comeco({ scale = 1, blur = 0 }) {
-  const [welcomeState, setWelcomeState] = useState('visible')
+
+  const introJaVista =
+    typeof window !== 'undefined' &&
+    sessionStorage.getItem(CHAVE_INTRO_VISTA) === 'true'
+
+  const [welcomeState, setWelcomeState] = useState(
+    introJaVista ? 'gone' : 'visible',
+  )
   // 'full' = vídeo ocupando a tela inteira | 'boxed' = retângulo com textos
-  const [stageMode, setStageMode] = useState('full')
+  const [stageMode, setStageMode] = useState(introJaVista ? 'boxed' : 'full')
   const videoARef = useRef(null)
   const videoBRef = useRef(null)
   const [activeSlot, setActiveSlot] = useState('a')
@@ -30,23 +39,24 @@ function Comeco({ scale = 1, blur = 0 }) {
     }
   }, [welcomeState])
 
-  // Cortina azul sobe -> vídeo em tela cheia -> vira retângulo
   useEffect(() => {
+    if (introJaVista) return
+
     const hold = setTimeout(() => {
       setWelcomeState('leaving')
       setTimeout(() => setWelcomeState('gone'), CURTAIN_DURATION)
     }, WELCOME_HOLD)
 
-    const shrink = setTimeout(
-      () => setStageMode('boxed'),
-      WELCOME_HOLD + CURTAIN_DURATION + FULLSCREEN_HOLD,
-    )
+    const shrink = setTimeout(() => {
+      setStageMode('boxed')
+      sessionStorage.setItem(CHAVE_INTRO_VISTA, 'true')
+    }, WELCOME_HOLD + CURTAIN_DURATION + FULLSCREEN_HOLD)
 
     return () => {
       clearTimeout(hold)
       clearTimeout(shrink)
     }
-  }, [])
+  }, [introJaVista])
 
   // Pré-carrega o próximo vídeo no slot inativo
   const preload = (index, slot) => {
@@ -137,7 +147,7 @@ function Comeco({ scale = 1, blur = 0 }) {
               arantimos{' '}
               <span className="letra">
                 <img src="contorno.png" className="contorno" alt="" />
-                diver
+                divers
                 <span className="acento">
                   <span className="giro">s</span>a
                 </span>

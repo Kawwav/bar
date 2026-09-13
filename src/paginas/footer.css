@@ -1,0 +1,185 @@
+.footer {
+  position: relative;
+  width: 100%;
+  background-color: #FF3B2A;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(rgba(255, 59, 42, 0.97), rgba(255, 59, 42, 0.97)),
+    var(--footer-dragao);
+  background-size: 180px 180px, cover, cover;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-position: 0 0, center, center;
+  color: #111;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 56px 4vw 0;
+  gap: 12px;
+}
+
+/* ---------- linha de cima: infos | modelo 3d | infos ---------- */
+
+.footer-topo {
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 30vw) 1fr;
+  align-items: start;
+  gap: 32px;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+.footer-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-coluna-esquerda {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.footer-coluna-direita {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.footer-descricao {
+  font-family: 'Prompt', sans-serif;
+  max-width: 26ch;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.footer-redes {
+  display: flex;
+  gap: 14px;
+}
+
+.footer-icone {
+  color: #111;
+  display: inline-flex;
+}
+
+.footer-icone svg {
+  width: 20px;
+  height: 20px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 40px;
+}
+
+.footer-coluna-links {
+  font-family: 'Prompt', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-coluna-links a {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  height: 1.3em;
+  line-height: 1.3em;
+  color: #111;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.footer-link-textos {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+.footer-link-linha {
+  display: block;
+  height: 1.3em;
+  line-height: 1.3em;
+}
+
+
+.footer-coluna-links a:hover .footer-link-textos {
+  transform: translateY(-50%);
+}
+
+.footer-copyright {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* ---------- modelo 3d, agora centralizado ---------- */
+
+.footer-modelo3d {
+  position: relative;
+  width: 100%;
+  height: min(42vw, 420px);
+  min-height: 240px;
+}
+
+/* ---------- "KAWWA" / "BAR" empilhado, esticado full-width ---------- */
+
+.footer-marca {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: -8px;
+}
+
+.footer-marca-linha {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(4.2rem, 17vw, 15rem);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: #111;
+}
+
+.footer-erro {
+  position: relative;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #ffe1de;
+  text-align: center;
+  max-width: 80vw;
+  align-self: center;
+  margin: 0 0 24px;
+}
+
+/* ---------- responsivo ---------- */
+
+@media (max-width: 860px) {
+  .footer-topo {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-modelo3d {
+    order: -1;
+    height: 60vw;
+  }
+
+  .footer-coluna-esquerda,
+  .footer-coluna-direita {
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-links {
+    justify-content: center;
+    gap: 32px;
+  }
+
+  .footer-marca-linha {
+    font-size: clamp(3.4rem, 21vw, 8rem);
+  }
+}

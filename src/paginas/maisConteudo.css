@@ -39,7 +39,6 @@
   will-change: transform;
 }
 
-/* Exatamente 3 itens visíveis por vez: cada item ocupa 1/3 do container */
 .mais-conteudo-carrossel-item {
   flex: 0 0 calc((100% - 2 * var(--carrossel-gap)) / 3);
   display: flex;
@@ -48,9 +47,6 @@
   text-align: center;
 }
 
-/* Transição ao trocar de categoria (Bebidas <-> Combos):
-   saindo = imagem e texto caem e somem no "chão";
-   entrando = a imagem vem de cima, nome e preço vêm de baixo. */
 @keyframes mc-cair-sumir {
   0% {
     opacity: 1;

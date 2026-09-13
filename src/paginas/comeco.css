@@ -198,12 +198,6 @@
   .sobreposicao {
     padding: 20px 22px;
   }
-
-  /* No celular, em vez de manter a proporção 16/9 (que deixa o vídeo
-     baixinho, com bastante espaço vazio), o retângulo passa a ocupar
-     quase a tela toda — largura e altura quase completas. O vídeo
-     continua com object-fit: cover, então ele preenche esse espaço
-     sem distorcer. */
   .moldurado {
     width: 96vw;
     height: 90vh;

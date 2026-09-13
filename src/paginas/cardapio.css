@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Londrina+Shadow&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@900&display=swap');
+
 .cardapio-scroll-container {
   position: relative;
   height: 400vh;
@@ -29,10 +30,11 @@
   letter-spacing: 0.02em;
   margin: 0;
   white-space: nowrap;
-  will-change: transform, opacity, font-size;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* Camada de ENTRADA: opacidade + subida, lenta e extremamente suave */
 .cardapio-letra-entrada {
   display: inline-block;
   opacity: 0;
@@ -47,7 +49,6 @@
   transform: translateY(0);
 }
 
-/* Camada de ESQUIVA: reage ao mouse, some suavemente quando ele se afasta */
 .cardapio-letra-esquiva {
   display: inline-block;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -80,6 +81,13 @@
   }
 }
 
+@media (max-width: 900px) {
+  .cardapio-imagem-stage {
+    top: 26vh;
+    bottom: auto;
+  }
+}
+
 .cardapio-imagem-frame {
   position: relative;
   height: 100%;
@@ -102,14 +110,14 @@
 
 .cardapio-frase {
   position: absolute;
-  top: 1px;
+  top: 0;
   left: 50%;
   z-index: 30;
   width: min(92vw, 950px);
   text-align: center;
   font-family: 'Prompt', sans-serif;
   font-weight: 900;
-  font-size: 160px;
+  font-size: clamp(56px, 26vw, 160px);
   line-height: 0.9;
   color: #000000;
   text-transform: uppercase;
@@ -118,7 +126,6 @@
   transform: translate(-50%, 0);
 }
 
-/* Cada linha (palavra) fica em bloco, uma embaixo da outra */
 .cardapio-frase-linha {
   display: block;
   overflow: hidden;
@@ -129,8 +136,8 @@
   opacity: 0;
   transform: translateY(60px);
   will-change: transform, opacity;
-  -webkit-text-stroke: 6px #FFF4E2;
-  text-stroke: 3px #FFF4E2;
+  -webkit-text-stroke: clamp(1.5px, 0.6vw, 6px) #FFF4E2;
+  text-stroke: clamp(1px, 0.3vw, 3px) #FFF4E2;
   paint-order: stroke fill;
 }
 
@@ -142,8 +149,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 60px;
+  gap: clamp(14px, 4vw, 60px);
   width: min(92vw, 950px);
+  flex-wrap: wrap;
   transform: translate(-50%, 0);
   opacity: 0;
   pointer-events: none;
@@ -153,7 +161,7 @@
 .cardapio-nav-item {
   font-family: 'Prompt', sans-serif;
   font-weight: 900;
-  font-size: clamp(22px, 2.6vw, 40px);
+  font-size: clamp(13px, 3.4vw, 40px);
   line-height: 1;
   color: #000000;
   text-transform: uppercase;
@@ -169,16 +177,6 @@
 
 .cardapio-nav-item--ativo {
   color: #d40000;
-}
-
-@media (max-width: 900px) {
-  .cardapio-nav {
-    gap: 24px;
-  }
-
-  .cardapio-nav-item {
-    font-size: 18px;
-  }
 }
 
 .cardapio-selo {
@@ -200,45 +198,22 @@
   will-change: opacity, transform;
 }
 
-/* Lado esquerdo, um pouco abaixo da linha central */
-.cardapio-selo-esquerda {
-  left: 3vw;
-  top: 58%;
-  transform:
-    translateY(calc(-50% + var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
-    translateX(var(--selo-parallax-x, 0px))
-    rotate(-9deg)
-    scale(var(--selo-escala, 0.5));
-}
-
-/* Lado direito, um pouco acima da linha central */
 .cardapio-selo-direita {
   right: 3vw;
   top: 40%;
   transform:
-    translateY(calc(-50% + var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
-    translateX(var(--selo-parallax-x, 0px))
+    translateX(calc(var(--selo-entrada-x, 0px) + var(--selo-parallax-x, 0px)))
+    translateY(var(--selo-parallax-y, 0px))
     rotate(8deg)
-    scale(var(--selo-escala, 0.5));
+    scale(var(--selo-escala, 1));
 }
 
-/* Selo 1: meia-lua (semicírculo), tipo etiqueta "HOT STUFF!" */
-.cardapio-selo-meia-lua {
-  width: 220px;
-  height: 112px;
-  background: #d40000;
-  border-radius: 999px 999px 4px 4px;
-  padding: 14px 20px 0;
-  font-size: 24px;
-}
-
-/* Selo 2: explosão/estrela, tipo etiqueta "FULL OF FLAVOUR" */
 .cardapio-selo-estrela {
-  width: 230px;
-  height: 230px;
+  width: clamp(104px, 19vw, 200px);
+  height: clamp(104px, 19vw, 200px);
   background: #d40000;
-  padding: 0 30px;
-  font-size: 26px;
+  padding: 0 clamp(10px, 2.4vw, 24px);
+  font-size: clamp(11px, 2.1vw, 22px);
   clip-path: polygon(
     50% 0%, 61% 17%, 79% 8%, 82% 28%, 100% 33%,
     92% 50%, 100% 67%, 82% 72%, 79% 92%, 61% 83%,
@@ -247,82 +222,24 @@
   );
 }
 
-@media (max-width: 900px) {
-  .cardapio-selo-meia-lua {
-    width: 140px;
-    height: 72px;
-    font-size: 15px;
-    padding: 10px 12px 0;
-  }
-
-  .cardapio-selo-estrela {
-    width: 150px;
-    height: 150px;
-    font-size: 16px;
-    padding: 0 18px;
-  }
-}
-
-/* Topo, perto do título — um pouco à esquerda */
-.cardapio-selo-topo {
-  left: 6vw;
-  top: 24%;
-  transform:
-    translateY(calc(-50% + var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
-    translateX(var(--selo-parallax-x, 0px))
-    rotate(-6deg)
-    scale(var(--selo-escala, 0.5));
-}
-
-/* Base, perto da frase final — um pouco à direita */
 .cardapio-selo-base {
-  right: 6vw;
+  left: 6vw;
   bottom: 8%;
   transform:
-    translateY(calc(var(--selo-desloc, 40px) + var(--selo-parallax-y, 0px)))
-    translateX(var(--selo-parallax-x, 0px))
-    rotate(5deg)
-    scale(var(--selo-escala, 0.5));
+    translateX(calc(var(--selo-entrada-x, 0px) + var(--selo-parallax-x, 0px)))
+    translateY(var(--selo-parallax-y, 0px))
+    rotate(-5deg)
+    scale(var(--selo-escala, 1));
 }
 
-/* Selo artesanal */
-.cardapio-selo-circulo {
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  background: #000000;
-  border: 6px dashed #FFF4E2;
-  padding: 0 26px;
-  font-size: 26px;
-}
-
-/* Selo preca ja*/
 .cardapio-selo-fita {
-  margin-bottom: 200px;
-  width: 260px;
-  height: 90px;
+  width: clamp(128px, 22vw, 220px);
+  height: clamp(48px, 7.8vw, 78px);
   background: #FFC400;
   color: #000000;
-  padding: 0 30px;
-  font-size: 26px;
+  padding: 0 clamp(10px, 2.4vw, 24px);
+  font-size: clamp(11px, 2.1vw, 22px);
   clip-path: polygon(
     8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%
   );
-}
-
-@media (max-width: 900px) {
-  .cardapio-selo-circulo {
-    width: 130px;
-    height: 130px;
-    font-size: 15px;
-    padding: 0 16px;
-    border-width: 4px;
-  }
-
-  .cardapio-selo-fita {
-    width: 170px;
-    height: 62px;
-    font-size: 15px;
-    padding: 0 16px;
-  }
 }

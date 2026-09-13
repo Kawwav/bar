@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import Comeco from './paginas/comeco'
 import Cardapio from './paginas/cardapio'
 import MaisConteudo from './paginas/maisConteudo'
+import Fotos from './paginas/fotos'
+import Footer from './paginas/footer'
 import './App.css'
 
 //npm run build
@@ -11,11 +13,43 @@ import './App.css'
 //git checkout main
 //git push origin main
 
+const CHAVE_SCROLL = 'kawwa_scroll_y'
+
 function App() {
   const targetRef = useRef(0)
   const [displayProgress, setDisplayProgress] = useState(0)
   const displayRef = useRef(0)
   const rafRef = useRef(null)
+
+  // Evita que o navegador restaure (ou zere) o scroll do jeito dele;
+  // quem manda agora é a gente, usando o sessionStorage.
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+
+    const scrollSalvo = sessionStorage.getItem(CHAVE_SCROLL)
+    if (scrollSalvo) {
+      // Espera o próximo frame pra garantir que o layout (vídeos, imagens
+      // ainda carregando, etc.) já tenha altura suficiente pra rolar até lá.
+      requestAnimationFrame(() => {
+        window.scrollTo(0, parseInt(scrollSalvo, 10))
+      })
+    }
+
+    const salvarScroll = () => {
+      sessionStorage.setItem(CHAVE_SCROLL, String(window.scrollY))
+    }
+
+    window.addEventListener('beforeunload', salvarScroll)
+    window.addEventListener('pagehide', salvarScroll)
+
+    return () => {
+      window.removeEventListener('beforeunload', salvarScroll)
+      window.removeEventListener('pagehide', salvarScroll)
+    }
+  }, [])
+
   useEffect(() => {
     const handleScroll = () => {
       const vh = window.innerHeight
@@ -66,6 +100,8 @@ function App() {
       </div>
       <Cardapio />
       <MaisConteudo />
+      <Fotos />
+      <Footer />
 
       <div className="secao-espaco" />
     </div>

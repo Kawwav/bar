@@ -1,67 +1,45 @@
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./cardapio.css";
 
+gsap.registerPlugin(ScrollTrigger);
+
 const PALAVRA = "Cardápio";
-// Letra em que o zoom deve mirar (a palavra sempre cresce "saindo"
-// de dentro dessa letra). Detecta a posição dela automaticamente
-// dentro de PALAVRA, então se a palavra mudar não quebra nada.
 const LETRA_ZOOM = "d";
 const INDICE_LETRA_ZOOM = PALAVRA.toLowerCase().indexOf(LETRA_ZOOM);
-
-// A origem do zoom do título (de onde ele "cresce") não é mais um
-// número fixo (%). Ela é calculada automaticamente em tempo real,
-// medindo onde a letra-alvo (LETRA_ZOOM) fica na tela e convertendo
-// essa posição em % relativa ao próprio título. Isso faz o efeito
-// funcionar certinho em qualquer tamanho de tela, incluindo celular,
-// sem precisar ajustar nada manualmente.
-const ORIGEM_ZOOM_PADRAO = { x: 50, y: 50 }; // fallback antes de medir
-
-// Quanto do scroll total (dentro do container estendido) é usado
-// para cada fase: 0 -> ZOOM_FIM é o zoom no D, ZOOM_FIM -> 1 é a revelação da imagem
+const ORIGEM_ZOOM_PADRAO = { x: 50, y: 50 }; 
+const AJUSTE_ORIGEM_TELA_MAIOR = { x: 0, y: -12 };
+const LARGURA_TELA_MAIOR = 1024;
 const ZOOM_FIM = 0.55;
 const ESCALA_MAX = 40;
-// Fração do progresso de revelação da imagem (0 a 1) usada para o título
-// "Cardápio" desaparecer suavemente enquanto a foto da cerveja vai abrindo
 const TITULO_FADE_DURACAO = 0.35;
-const EASE = 0.07;
 const EPSILON = 0.0005;
 
-// Itens do nav que aparece logo abaixo da imagem.
-// "Bebidas" e "Combos" são abas: clicar troca o conteúdo dentro do
-// mesmo carrossel (#cardapio-carrossel), sem empilhar seções.
-// "Comidas" continua sendo uma âncora normal de scroll.
 const NAV_ITENS = [
   { texto: "Bebidas / Drinks", tipo: "categoria", categoria: "bebidas" },
   { texto: "Combos", tipo: "categoria", categoria: "combos" },
   { texto: "Comidas", tipo: "ancora", href: "#comidas" },
 ];
-// Alvo compartilhado por Bebidas/Combos (o carrossel único no maisConteudo)
+
 const CARROSSEL_ANCORA = "#cardapio-carrossel";
-// Nome do evento customizado usado para avisar o maisConteudo.jsx
-// qual categoria (bebidas/combos) deve aparecer no carrossel
 const EVENTO_CATEGORIA = "cardapio:categoria";
-// Vão de folga (px) entre a base da imagem e o topo do nav
 const NAV_GAP_PX = 64;
-// Progresso (dentro da revelação da imagem) em que o nav começa/termina de aparecer
 const NAV_INICIO = 0.55;
 const NAV_DURACAO = 0.2;
 
-// Palavras da frase "bora pedir", uma por linha
 const FRASE_PALAVRAS = ["bora", "pedir"];
-// Quanto (em fração do progresso da frase) cada letra "espera" a anterior
 const FRASE_STAGGER = 0.025;
-// Duração (em fração do progresso da frase) da subida de cada letra
 const FRASE_DURACAO = 0.4;
-// Quantos px cada letra sobe a partir do "chão"
 const FRASE_SUBIDA_PX = 60;
+
 const SELOS_ATRASO = 0.08;
 const SELOS_DURACAO = 0.5;
-const SELOS_DESLOCAMENTO_PX = 40;
+const SELOS_ENTRADA_PX = 420;
+const SELOS_DIRECAO_ENTRADA = [1, -1];
 const SELOS_PARALLAX = [
-  { y: -70, x: 18 }, // topo
-  { y: 90, x: -14 }, // esquerda
-  { y: -60, x: 14 }, // direita
-  { y: 100, x: -18 }, // base
+  { y: -320, x: 90 },
+  { y: 480, x: -110 },
 ];
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
@@ -77,20 +55,18 @@ export default function Cardapio() {
   const frameRef = useRef(null);
   const imagemRef = useRef(null);
   const fraseRef = useRef(null);
+  const linhaFraseRefs = useRef([]);
   const navRef = useRef(null);
   const letraRefs = useRef([]);
   const fraseLetraRefs = useRef([]);
-  const seloEsquerdaRef = useRef(null);
   const seloDireitaRef = useRef(null);
-  const seloTopoRef = useRef(null);
   const seloBaseRef = useRef(null);
+
   const [visivel, setVisivel] = useState(false);
   const [navAtivo, setNavAtivo] = useState(null);
   const [categoriaAtiva, setCategoriaAtiva] = useState("bebidas");
-  const [origemZoom, setOrigemZoom] = useState(ORIGEM_ZOOM_PADRAO);
-  const targetProgressRef = useRef(0);
-  const displayProgressRef = useRef(0);
-  const rafRef = useRef(null);
+
+  const scrollTriggerRef = useRef(null);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -110,9 +86,6 @@ export default function Cardapio() {
     return () => observer.disconnect();
   }, []);
 
-  // Observa as seções referenciadas por âncora (ex: #comidas) e marca
-  // em vermelho o item correspondente quando a seção está em foco na tela.
-  // Bebidas/Combos não entram aqui: eles ficam vermelhos por clique (ver categoriaAtiva).
   useEffect(() => {
     const alvos = NAV_ITENS
       .filter(({ tipo }) => tipo === "ancora")
@@ -126,8 +99,6 @@ export default function Cardapio() {
         const visiveis = entries.filter((entry) => entry.isIntersecting);
         if (visiveis.length === 0) return;
 
-        // Se mais de uma seção estiver na faixa observada, usa a que
-        // está mais próxima do topo (a que o usuário está "vendo agora")
         const maisProxima = visiveis.reduce((melhor, atual) =>
           atual.boundingClientRect.top < melhor.boundingClientRect.top
             ? atual
@@ -143,23 +114,15 @@ export default function Cardapio() {
     return () => observer.disconnect();
   }, []);
 
-  // Ajusta automaticamente o tamanho da fonte do título pra ele
-  // NUNCA quebrar linha, em nenhuma tela. O CSS já define um tamanho
-  // "ideal" (clamp), mas em telas estreitas esse tamanho pode ser
-  // grande demais pra palavra caber de uma vez — então aqui a gente
-  // mede a largura real da palavra e, se não couber, encolhe a fonte
-  // na proporção exata necessária.
   useEffect(() => {
     const ajustarTamanhoFonte = () => {
       const titulo = tituloRef.current;
       const secao = sectionRef.current;
       if (!titulo || !secao) return;
 
-      // Volta pro tamanho "natural" do CSS antes de medir, senão a
-      // gente vai encolhendo em cima do que já encolheu antes
       titulo.style.fontSize = "";
 
-      const margemSeguranca = 0.94; // deixa uma folguinha nas bordas
+      const margemSeguranca = 0.94;
       const larguraDisponivel = secao.clientWidth * margemSeguranca;
       const larguraNecessaria = titulo.scrollWidth;
 
@@ -170,10 +133,10 @@ export default function Cardapio() {
         const fator = larguraDisponivel / larguraNecessaria;
         titulo.style.fontSize = `${tamanhoAtual * fator}px`;
       }
+
+      ScrollTrigger.refresh();
     };
 
-    // Espera as fontes carregarem antes de medir, senão a medição
-    // pode sair errada (fonte fallback é mais estreita/larga que a real)
     if (document.fonts?.ready) {
       document.fonts.ready.then(ajustarTamanhoFonte);
     } else {
@@ -188,44 +151,54 @@ export default function Cardapio() {
     };
   }, []);
 
-  // Calcula (e recalcula) automaticamente o ponto de onde o título
-  // "Cardápio" deve crescer: o centro da letra-alvo (LETRA_ZOOM),
-  // convertido em % relativa à caixa do próprio título. Como usa
-  // medidas reais do navegador (getBoundingClientRect), funciona em
-  // qualquer resolução/tela sem precisar ajustar nada na mão.
+
+
+  const calcularOrigemZoomRef = useRef(() => ORIGEM_ZOOM_PADRAO);
+
   useEffect(() => {
-    const calcularOrigemZoom = () => {
+    calcularOrigemZoomRef.current = () => {
       const titulo = tituloRef.current;
       const letraAlvo = letraRefs.current[INDICE_LETRA_ZOOM];
-      if (!titulo || !letraAlvo) return;
+      if (!titulo || !letraAlvo) return ORIGEM_ZOOM_PADRAO;
+
+      const wrapperEntrada = letraAlvo.parentElement;
+
+      const transformAntigo = titulo.style.transform;
+      const letraTransformAntigo = letraAlvo.style.transform;
+      const wrapperTransformAntigo = wrapperEntrada
+        ? wrapperEntrada.style.transform
+        : "";
+
+      titulo.style.transform = "none";
+      letraAlvo.style.transform = "translate(0px, 0px)";
+      if (wrapperEntrada) wrapperEntrada.style.transform = "translateY(0px)";
 
       const tituloRect = titulo.getBoundingClientRect();
       const letraRect = letraAlvo.getBoundingClientRect();
-      if (tituloRect.width === 0 || tituloRect.height === 0) return;
+
+      titulo.style.transform = transformAntigo;
+      letraAlvo.style.transform = letraTransformAntigo;
+      if (wrapperEntrada) wrapperEntrada.style.transform = wrapperTransformAntigo;
+
+      if (tituloRect.width === 0 || tituloRect.height === 0) {
+        return ORIGEM_ZOOM_PADRAO;
+      }
 
       const centroX = letraRect.left + letraRect.width / 2;
       const centroY = letraRect.top + letraRect.height / 2;
 
-      const x = ((centroX - tituloRect.left) / tituloRect.width) * 100;
-      const y = ((centroY - tituloRect.top) / tituloRect.height) * 100;
+      let x = ((centroX - tituloRect.left) / tituloRect.width) * 100;
+      let y = ((centroY - tituloRect.top) / tituloRect.height) * 100;
 
-      setOrigemZoom({ x, y });
-    };
+      if (window.innerWidth >= LARGURA_TELA_MAIOR) {
+        x += AJUSTE_ORIGEM_TELA_MAIOR.x;
+        y += AJUSTE_ORIGEM_TELA_MAIOR.y;
+      }
 
-    // Espera um frame (e as fontes) pro layout assentar antes de medir
-    const medir = () => requestAnimationFrame(calcularOrigemZoom);
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(medir);
-    } else {
-      medir();
-    }
+      x = Math.min(100, Math.max(0, x));
+      y = Math.min(100, Math.max(0, y));
 
-    window.addEventListener("resize", calcularOrigemZoom);
-    window.addEventListener("orientationchange", calcularOrigemZoom);
-
-    return () => {
-      window.removeEventListener("resize", calcularOrigemZoom);
-      window.removeEventListener("orientationchange", calcularOrigemZoom);
+      return { x, y };
     };
   }, []);
 
@@ -234,26 +207,27 @@ export default function Cardapio() {
       const progressoZoom = Math.min(progresso / ZOOM_FIM, 1);
       const escala = 1 + progressoZoom * (ESCALA_MAX - 1);
 
-      if (tituloRef.current) {
-        tituloRef.current.style.transform = `scale(${escala})`;
-      }
-
       const progressoImagem = Math.min(
         Math.max((progresso - ZOOM_FIM) / (1 - ZOOM_FIM), 0),
         1
       );
 
+      const progressoFadeTitulo = Math.min(
+        progressoImagem / TITULO_FADE_DURACAO,
+        1
+      );
+
       if (tituloRef.current) {
-        // Enquanto a imagem vai se revelando, o título vai sumindo
-        const progressoFadeTitulo = Math.min(
-          progressoImagem / TITULO_FADE_DURACAO,
-          1
-        );
-        tituloRef.current.style.opacity = `${1 - progressoFadeTitulo}`;
+        if (progresso <= EPSILON) {
+          tituloRef.current.style.transform = "scale(1)";
+          tituloRef.current.style.opacity = "1";
+        } else {
+          tituloRef.current.style.transform = `scale(${escala})`;
+          tituloRef.current.style.opacity = `${1 - progressoFadeTitulo}`;
+        }
       }
 
       if (stageRef.current && frameRef.current && imagemRef.current) {
-        // Cresce de bem pequena até o tamanho final
         const escalaImagem = 0.4 + progressoImagem * 0.6;
         const revelacao = Math.max(progressoImagem, 0.0001);
         const larguraFramePct = revelacao * 100;
@@ -288,12 +262,8 @@ export default function Cardapio() {
         navRef.current.style.opacity = tNav;
         navRef.current.style.pointerEvents = progressoNav > 0.5 ? "auto" : "none";
       }
-      const selos = [
-        seloTopoRef.current,
-        seloEsquerdaRef.current,
-        seloDireitaRef.current,
-        seloBaseRef.current,
-      ];
+
+      const selos = [seloDireitaRef.current, seloBaseRef.current];
 
       selos.forEach((el, i) => {
         if (!el) return;
@@ -305,15 +275,67 @@ export default function Cardapio() {
         const t = easeOutCubic(bruto);
         el.style.opacity = t;
         el.style.setProperty(
-          "--selo-desloc",
-          `${(1 - t) * SELOS_DESLOCAMENTO_PX}px`
+          "--selo-entrada-x",
+          `${(1 - t) * SELOS_ENTRADA_PX * SELOS_DIRECAO_ENTRADA[i]}px`
         );
-        el.style.setProperty("--selo-escala", `${0.5 + t * 0.5}`);
+        el.style.setProperty("--selo-escala", `${0.85 + t * 0.15}`);
 
         const { y: fatorY, x: fatorX } = SELOS_PARALLAX[i];
         el.style.setProperty("--selo-parallax-y", `${progresso * fatorY}px`);
         el.style.setProperty("--selo-parallax-x", `${progresso * fatorX}px`);
       });
+
+      if (
+        fraseRef.current &&
+        frameRef.current &&
+        sectionRef.current &&
+        linhaFraseRefs.current[0] &&
+        linhaFraseRefs.current[1]
+      ) {
+        const secaoRect = sectionRef.current.getBoundingClientRect();
+        const frameRect = frameRef.current.getBoundingClientRect();
+        const alturaLinha1 = linhaFraseRefs.current[0].getBoundingClientRect().height;
+        const alturaLinha2 = linhaFraseRefs.current[1].getBoundingClientRect().height;
+
+        const topoImagem = frameRect.top - secaoRect.top;
+        const novoTop = topoImagem - alturaLinha1 - alturaLinha2 / 2;
+        fraseRef.current.style.top = `${novoTop}px`;
+      }
+
+      if (frameRef.current && sectionRef.current) {
+        const secaoRect = sectionRef.current.getBoundingClientRect();
+        const frameRect = frameRef.current.getBoundingClientRect();
+        const frameTop = frameRect.top - secaoRect.top;
+        const frameBottom = frameRect.bottom - secaoRect.top;
+        const frameLeft = frameRect.left - secaoRect.left;
+        const frameRight = frameRect.right - secaoRect.left;
+        const frameHeight = frameRect.height;
+
+        const posicionar = (ref, { left, top }) => {
+          if (!ref.current) return;
+          ref.current.style.left = `${left}px`;
+          ref.current.style.top = `${top}px`;
+          ref.current.style.right = "auto";
+          ref.current.style.bottom = "auto";
+        };
+
+        if (seloDireitaRef.current) {
+          const w = seloDireitaRef.current.offsetWidth;
+          posicionar(seloDireitaRef, {
+            left: frameRight - w * 0.55,
+            top: frameTop + frameHeight * 0.3,
+          });
+        }
+
+        if (seloBaseRef.current) {
+          const w = seloBaseRef.current.offsetWidth;
+          const h = seloBaseRef.current.offsetHeight;
+          posicionar(seloBaseRef, {
+            left: frameLeft - w * 0.55,
+            top: frameBottom - h * 1.4,
+          });
+        }
+      }
 
       const ATRASO_FRASE = 0.15;
       const progressoFrase = Math.min(
@@ -338,46 +360,43 @@ export default function Cardapio() {
       });
     };
 
-    const handleScroll = () => {
-      const container = containerRef.current;
-      if (!container) return;
-
-      const rect = container.getBoundingClientRect();
-      const totalScrollavel = rect.height - window.innerHeight;
-      if (totalScrollavel <= 0) return;
-
-      const percorrido = -rect.top;
-      const p = Math.min(Math.max(percorrido / totalScrollavel, 0), 1);
-      targetProgressRef.current = p;
+    const resetarEsquiva = () => {
+      letraRefs.current.forEach((el) => {
+        if (el) el.style.transform = "translate(0px, 0px)";
+      });
     };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", resetarEsquiva, { passive: true });
 
-    const tick = () => {
-      const target = targetProgressRef.current;
-      const current = displayProgressRef.current;
-      const diff = target - current;
 
-      if (Math.abs(diff) > EPSILON) {
-        displayProgressRef.current = current + diff * EASE;
-      } else if (current !== target) {
-        displayProgressRef.current = target;
-      }
+    const st = ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.6, // dá a mesma sensação de "arrasto suave" do lerp manual (EASE)
+      invalidateOnRefresh: true,
+      onRefresh: () => {
+        const origem = calcularOrigemZoomRef.current();
+        if (tituloRef.current) {
+          tituloRef.current.style.transformOrigin = `${origem.x}% ${origem.y}%`;
+        }
+      },
+      onUpdate: (self) => aplicarVisual(self.progress),
+    });
 
-      aplicarVisual(displayProgressRef.current);
-      rafRef.current = requestAnimationFrame(tick);
-    };
+    scrollTriggerRef.current = st;
 
-    rafRef.current = requestAnimationFrame(tick);
+    const refresh = () => ScrollTrigger.refresh();
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(refresh);
+    }
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("scroll", resetarEsquiva);
+      st.kill();
     };
   }, []);
 
-  // Efeito de "esquiva": cada letra se afasta suavemente do mouse
   const RAIO = 130;
   const FORCA_MAX = 10;
 
@@ -413,8 +432,6 @@ export default function Cardapio() {
     });
   };
 
-  // Clique em "Bebidas" ou "Combos": troca a categoria ativa, avisa o
-  // maisConteudo.jsx (que renderiza o carrossel certo) e rola até lá
   const handleClickCategoria = (categoria) => (e) => {
     e.preventDefault();
     setCategoriaAtiva(categoria);
@@ -436,7 +453,7 @@ export default function Cardapio() {
             className="cardapio-title"
             ref={tituloRef}
             style={{
-              transformOrigin: `${origemZoom.x}% ${origemZoom.y}%`,
+              transformOrigin: `${ORIGEM_ZOOM_PADRAO.x}% ${ORIGEM_ZOOM_PADRAO.y}%`,
             }}
           >
             {PALAVRA.split("").map((letra, i) => (
@@ -513,7 +530,11 @@ export default function Cardapio() {
             {FRASE_PALAVRAS.map((palavra, wi) => {
               const offset = FRASE_PALAVRAS.slice(0, wi).join("").length;
               return (
-                <span className="cardapio-frase-linha" key={wi}>
+                <span
+                  className="cardapio-frase-linha"
+                  key={wi}
+                  ref={(el) => (linhaFraseRefs.current[wi] = el)}
+                >
                   {palavra.split("").map((letra, li) => (
                     <span
                       className="cardapio-frase-letra"
@@ -529,24 +550,10 @@ export default function Cardapio() {
           </p>
 
           <div
-            className="cardapio-selo cardapio-selo-esquerda cardapio-selo-meia-lua"
-            ref={seloEsquerdaRef}
-          >
-            <span>Hot Stuff!</span>
-          </div>
-
-          <div
             className="cardapio-selo cardapio-selo-direita cardapio-selo-estrela"
             ref={seloDireitaRef}
           >
             <span>Sabor de<br />Verdade</span>
-          </div>
-
-          <div
-            className="cardapio-selo cardapio-selo-topo cardapio-selo-circulo"
-            ref={seloTopoRef}
-          >
-            <span>100%<br />Artesanal</span>
           </div>
 
           <div
