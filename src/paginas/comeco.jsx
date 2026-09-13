@@ -27,7 +27,6 @@ function Comeco({ scale = 1, blur = 0 }) {
   const timerRef = useRef(null)
   const nextIndexRef = useRef(1)
 
-  // Bloqueia o scroll enquanto a cortina estiver visível ou subindo
   useEffect(() => {
     if (welcomeState === 'visible' || welcomeState === 'leaving') {
       document.body.style.overflow = 'hidden'

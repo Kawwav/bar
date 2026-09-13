@@ -21,8 +21,6 @@ function App() {
   const displayRef = useRef(0)
   const rafRef = useRef(null)
 
-  // Evita que o navegador restaure (ou zere) o scroll do jeito dele;
-  // quem manda agora é a gente, usando o sessionStorage.
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
@@ -30,8 +28,6 @@ function App() {
 
     const scrollSalvo = sessionStorage.getItem(CHAVE_SCROLL)
     if (scrollSalvo) {
-      // Espera o próximo frame pra garantir que o layout (vídeos, imagens
-      // ainda carregando, etc.) já tenha altura suficiente pra rolar até lá.
       requestAnimationFrame(() => {
         window.scrollTo(0, parseInt(scrollSalvo, 10))
       })

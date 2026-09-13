@@ -9,7 +9,7 @@ const PALAVRA = "Cardápio";
 const LETRA_ZOOM = "d";
 const INDICE_LETRA_ZOOM = PALAVRA.toLowerCase().indexOf(LETRA_ZOOM);
 const ORIGEM_ZOOM_PADRAO = { x: 50, y: 50 }; 
-const AJUSTE_ORIGEM_TELA_MAIOR = { x: 0, y: -12 };
+const AJUSTE_ORIGEM_TELA_MAIOR = { x: 0, y: -52 };
 const LARGURA_TELA_MAIOR = 1024;
 const ZOOM_FIM = 0.55;
 const ESCALA_MAX = 40;
@@ -38,8 +38,8 @@ const SELOS_DURACAO = 0.5;
 const SELOS_ENTRADA_PX = 420;
 const SELOS_DIRECAO_ENTRADA = [1, -1];
 const SELOS_PARALLAX = [
-  { y: -320, x: 90 },
-  { y: 480, x: -110 },
+  { y: 0, x: 0 },
+  { y: 0, x: 0 },
 ];
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
@@ -329,10 +329,9 @@ export default function Cardapio() {
 
         if (seloBaseRef.current) {
           const w = seloBaseRef.current.offsetWidth;
-          const h = seloBaseRef.current.offsetHeight;
           posicionar(seloBaseRef, {
             left: frameLeft - w * 0.55,
-            top: frameBottom - h * 1.4,
+            top: frameTop + frameHeight * 0.3,
           });
         }
       }

@@ -18,7 +18,7 @@ const amortecer = (fatorA60fps, delta) =>
 
 const janela = (t, inicio, fim) => clamp01((t - inicio) / (fim - inicio))
 
-const PALAVRAS_REVELACAO = ['CAPTURE', 'CADA', 'MOMENTO']
+const PALAVRAS_REVELACAO = ['MELHORES', 'MOMENTOS', 'NA' , 'CASA']
 const LIMIAR_CENTRO_TELA = 0.15
 const DURACAO_ENTRADA_TEXTO = 1.4
 const QUEBRA_DIAGONAL = 0.6
@@ -31,8 +31,6 @@ const IMAGENS_CARROSSEL = [
   'festa/festa5.webp',
 ]
 
-// Texto fixo de 2 linhas exibido em cima do carrossel de fotos,
-// adaptado ao tema do bar (drinks, festas, noites).
 const CARROSSEL_LEGENDA = {
   linha1: 'Cada festa tem um clima diferente',
   linha2: 'e combina com os mais variados drinks da casa',
@@ -77,25 +75,9 @@ export default function Fotos() {
   const marcasTrilhoRef = useRef(null)
   const marcasGrupoRef = useRef(null)
   const statsNumeroRefs = useRef([])
-  // Fica "true" durante a transição de troca de foto (mesma duração da
-  // transition do CSS). Usado para aliviar o render 3D nesse momento e
-  // evitar engasgo ao trocar de imagem.
-  const transicionandoCarrosselRef = useRef(false)
-  const timeoutTransicaoCarrosselRef = useRef(null)
-
-  const marcarTransicaoCarrossel = () => {
-    transicionandoCarrosselRef.current = true
-    clearTimeout(timeoutTransicaoCarrosselRef.current)
-    timeoutTransicaoCarrosselRef.current = setTimeout(() => {
-      transicionandoCarrosselRef.current = false
-    }, 1550) // um pouco mais que a transition de 1.4s + delay de 0.12s do CSS
-  }
-
-  useEffect(() => () => clearTimeout(timeoutTransicaoCarrosselRef.current), [])
 
   const carrosselAnterior = useCallback(() => {
     if (!carrosselInterativoRef.current) return
-    marcarTransicaoCarrossel()
     setIndiceCarrossel(
       (i) => (i - 1 + IMAGENS_CARROSSEL.length) % IMAGENS_CARROSSEL.length,
     )
@@ -103,13 +85,11 @@ export default function Fotos() {
 
   const carrosselProxima = useCallback(() => {
     if (!carrosselInterativoRef.current) return
-    marcarTransicaoCarrossel()
     setIndiceCarrossel((i) => (i + 1) % IMAGENS_CARROSSEL.length)
   }, [])
 
   const carrosselIrPara = useCallback((i) => {
     if (!carrosselInterativoRef.current) return
-    marcarTransicaoCarrossel()
     setIndiceCarrossel(i)
   }, [])
 
@@ -140,7 +120,6 @@ export default function Fotos() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     renderer.setSize(container.clientWidth, container.clientHeight)
 
-    // Configuração de Iluminação e ToneMapping para Qualidade Realista/Estúdio
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.25
     renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -149,7 +128,6 @@ export default function Fotos() {
 
     container.appendChild(renderer.domElement)
 
-    // Ambiente HDR de Estúdio
     const pmrem = new THREE.PMREMGenerator(renderer)
     pmrem.compileCubemapShader()
     const roomEnv = new RoomEnvironment()
@@ -157,14 +135,11 @@ export default function Fotos() {
     scene.environment = ambienteTextura
     roomEnv.dispose()
 
-    // Sistema de Iluminação
     const luzHemisferio = new THREE.HemisphereLight(0xfffdfa, 0xd0c4b4, 0.9)
     scene.add(luzHemisferio)
 
     const luzPrincipal = new THREE.DirectionalLight(0xfff5ea, 3.5)
     luzPrincipal.castShadow = true
-    // 1024 em vez de 2048: reduz bastante o custo de gerar o shadow map a
-    // cada frame, mantendo a sombra visualmente equivalente nesse enquadramento.
     luzPrincipal.shadow.mapSize.set(1024, 1024)
     luzPrincipal.shadow.camera.left = -3
     luzPrincipal.shadow.camera.right = 3
@@ -246,7 +221,7 @@ export default function Fotos() {
 
         const tamanho = caixa.getSize(new THREE.Vector3())
         const maiorLado = Math.max(tamanho.x, tamanho.y, tamanho.z)
-        if (maiorLado > 0) escalaBase = 1.9 / maiorLado
+        if (maiorLado > 0) escalaBase = 2.2 / maiorLado
 
         pivo.scale.setScalar(escalaBase)
         pivo.add(modelo)
@@ -302,6 +277,8 @@ export default function Fotos() {
 
     let scrollProgressoAlvo = 0
     let scrollProgressoExibido = 0
+    let diagonalProgressoExibido = 0
+    const AMORTECIMENTO_DIAGONAL = 0.035
 
     const calcularScrollProgresso = () => {
       const rect = secaoFotos.getBoundingClientRect()
@@ -343,13 +320,16 @@ export default function Fotos() {
       const DIST_Y_VH = 22
 
       const progressoCortina = clamp01(scrollProgressoExibido / QUEBRA_DIAGONAL)
-      const progressoDiagonal = clamp01(
+      const progressoDiagonalAlvo = clamp01(
         (scrollProgressoExibido - QUEBRA_DIAGONAL) / (1 - QUEBRA_DIAGONAL),
       )
+      diagonalProgressoExibido +=
+        (progressoDiagonalAlvo - diagonalProgressoExibido) *
+        amortecer(AMORTECIMENTO_DIAGONAL, delta)
 
       const exitSuave = liberadoParaScroll ? easeInOutCubic(progressoCortina) : 0
       const diagonalSuave = liberadoParaScroll
-        ? easeInOutCubic(progressoDiagonal)
+        ? easeInOutCubic(diagonalProgressoExibido)
         : 0
 
       linhasPalavras.forEach((linha, i) => {
@@ -375,7 +355,7 @@ export default function Fotos() {
         cortinaEsqRef.current.style.transform = `translateX(${-exitSuave * 100}%)`
         cortinaDirRef.current.style.transform = `translateX(${exitSuave * 100}%)`
       }
-      const carrosselInterativo = exitSuave > 0.5 && diagonalSuave <= 0
+      const carrosselInterativo = exitSuave > 0.5 && diagonalSuave <= 0.5
       carrosselInterativoRef.current = carrosselInterativo
 
       if (trilhoRef.current) {
@@ -425,8 +405,6 @@ export default function Fotos() {
         const progressoTexto = easeOutCubic(
           clamp01((diagonalSuave - 0.35) / 0.65),
         )
-        // Mesmo clip-path do quadrado bege: o conteúdo só aparece dentro
-        // da área já revelada, nunca flutuando por cima do fundo creme.
         const L = diagonalSuave * 200
         diagonalTextoRef.current.style.clipPath =
           `polygon(0% 100%, ${L}% 100%, 0% ${100 - L}%)`
@@ -434,9 +412,6 @@ export default function Fotos() {
         diagonalTextoRef.current.style.transform =
           `translateY(${(1 - progressoTexto) * 24}px)`
 
-        // Contagem dos números: sobem de 0 até o valor final, perseguindo
-        // o alvo de forma amortecida (bem mais lenta que o resto), o que
-        // deixa a contagem suave em vez de saltar junto com o scroll.
         statsNumeroRefs.current.forEach((el, i) => {
           if (!el) return
           const stat = ESTATISTICAS[i]
@@ -604,15 +579,7 @@ export default function Fotos() {
 
       if (modeloAssentado) {
         const abrindoCarrossel = liberadoParaScroll && scrollProgressoExibido > QUEBRA_DIAGONAL * 0.85
-        // Enquanto uma foto está entrando/saindo, o render 3D pula mais
-        // frames — isso libera a thread principal e a GPU bem na hora em
-        // que a transição do carrossel mais precisa de fôlego, evitando
-        // o engasgo ao trocar de imagem.
-        const fatorPular = transicionandoCarrosselRef.current
-          ? 8
-          : abrindoCarrossel
-            ? 4
-            : 2
+        const fatorPular = abrindoCarrossel ? 4 : 2
         contadorFrameRender = (contadorFrameRender + 1) % fatorPular
         if (contadorFrameRender === 0) {
           renderer.render(scene, camera)
@@ -765,7 +732,7 @@ export default function Fotos() {
                         src={src}
                         alt={`Foto ${i + 1}`}
                         decoding="async"
-                        loading="eager"
+                        loading={distancia <= 1 ? 'eager' : 'lazy'}
                         fetchPriority={ativo ? 'high' : 'auto'}
                       />
                     </div>
@@ -864,7 +831,7 @@ export default function Fotos() {
                       src={src}
                       alt=""
                       className="marcas-logo"
-                      loading="lazy"
+                      loading="eager"
                       decoding="async"
                     />
                   ))}
@@ -876,7 +843,7 @@ export default function Fotos() {
                       src={src}
                       alt=""
                       className="marcas-logo"
-                      loading="lazy"
+                      loading="eager"
                       decoding="async"
                     />
                   ))}

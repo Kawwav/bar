@@ -24,7 +24,7 @@
     border-radius 1.1s cubic-bezier(0.7, 0, 0.2, 1);
 }
 
-/* estado final: retângulo 16/9 */
+
 .moldurado {
   width: min(95vw, 1560px);
   height: min(53.4375vw, 877px);

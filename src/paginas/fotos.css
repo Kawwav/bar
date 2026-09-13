@@ -2,6 +2,7 @@
 
 .fotos-wrapper {
   position: relative;
+  z-index: 1;
   width: 100%;
   min-height: 320vh;
   background: #FFF4E2;

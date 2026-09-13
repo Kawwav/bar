@@ -57,8 +57,6 @@ function Footer() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     container.appendChild(renderer.domElement)
 
-    // Ambiente de luz gerado na hora, pra materiais metálicos/vidro
-    // (metalness alto, roughness baixo) terem algo pra refletir.
     const pmremGenerator = new THREE.PMREMGenerator(renderer)
     scene.environment = pmremGenerator.fromScene(
       new RoomEnvironment(),
@@ -83,13 +81,8 @@ function Footer() {
     camera.position.set(0, 0, 3)
     camera.lookAt(0, 0, 0)
 
-    // Cada item: { modelo, raio, alturaDescanso, atraso }
     let garrafas = []
     let jaEntrouNaTela = false
-
-    // Enquadra a câmera pra caber a fileira inteira de garrafas,
-    // considerando tanto a altura quanto a largura ocupadas por elas
-    // (importante pq a fileira é bem mais larga do que alta).
     const enquadrarGrupo = (caixaGrupo) => {
       const centro = caixaGrupo.getCenter(new THREE.Vector3())
       const largura = caixaGrupo.max.x - caixaGrupo.min.x
@@ -99,9 +92,6 @@ function Footer() {
       const margem = 1.12
       const fovRad = (camera.fov * Math.PI) / 180
       const aspecto = container.clientWidth / container.clientHeight || 1
-
-      // Distância mínima pra caber a altura no FOV vertical, e a
-      // largura no FOV horizontal (que depende do aspecto do container).
       const distanciaPorAltura = altura / 2 / Math.tan(fovRad / 2)
       const distanciaPorLargura = largura / 2 / (Math.tan(fovRad / 2) * aspecto)
       const distancia = Math.max(distanciaPorAltura, distanciaPorLargura) * margem
@@ -117,10 +107,6 @@ function Footer() {
       return { raioGrupo, distancia }
     }
 
-    // Deixa a garrafa pronta pra cair (posicionada acima do topo visível
-    // da área do footer, na mesma coluna/profundidade em que vai
-    // assentar), mas invisível até a hora certa de disparar a animação.
-    // Precisa da câmera já posicionada (chamar depois de enquadrarGrupo).
     const prepararPoseDeQueda = (objeto, raio, alturaDescanso) => {
       const fovRad = (camera.fov * Math.PI) / 180
       const distanciaCam = camera.position.z - objeto.position.z
@@ -133,11 +119,6 @@ function Footer() {
       objeto.visible = false
     }
 
-    // Faz a garrafa cair já em pé (sem tombar), quicar (decrescente, já
-    // embutido no easing 'bounce.out') e assentar com um leve balanço.
-    // "atraso" cria o efeito de cascata entre as garrafas da fileira.
-    // Ao terminar, marca o item como assentado pra liberar a flutuação
-    // contínua (mesmo espírito do modelo 3d da seção de fotos).
     const iniciarQueda = (item) => {
       const { modelo: objeto, alturaDescanso, atraso } = item
       objeto.visible = true
@@ -204,8 +185,6 @@ function Footer() {
 
           const alturaDescanso = clone.position.y
 
-          // Acumula a caixa (já na pose de descanso) pra enquadrar a
-          // câmera considerando a fileira inteira.
           const caixaDescanso = new THREE.Box3().setFromObject(clone)
           if (primeiraCaixa) {
             caixaGrupo.copy(caixaDescanso)
@@ -227,19 +206,14 @@ function Footer() {
           })
         })
 
-        // Posiciona a câmera pra caber a fileira toda...
         enquadrarGrupo(caixaGrupo)
 
-        // ...e só então esconde cada garrafa acima do topo visível,
-        // já que isso depende da posição final da câmera.
         itens.forEach(({ modelo, raio, alturaDescanso }) => {
           prepararPoseDeQueda(modelo, raio, alturaDescanso)
         })
 
         garrafas = itens
 
-        // Se o footer já estava visível quando o modelo terminou de
-        // carregar, dispara a queda de todas na hora.
         if (jaEntrouNaTela) {
           garrafas.forEach((item) => {
             iniciarQueda(item)
@@ -255,8 +229,7 @@ function Footer() {
       },
     )
 
-    // Só dispara a queda na primeira vez que o footer entrar na tela.
-    const observadorDeVisibilidade = new IntersectionObserver(
+    const observadorRevelacao = new IntersectionObserver(
       (entradas) => {
         entradas.forEach((entrada) => {
           if (entrada.isIntersecting && !jaEntrouNaTela) {
@@ -266,14 +239,14 @@ function Footer() {
                 iniciarQueda(item)
               })
             }
-            observadorDeVisibilidade.disconnect()
+            observadorRevelacao.disconnect()
           }
         })
       },
-      { threshold: 0.35 },
+      { threshold: 0.1 },
     )
     if (footerRef.current) {
-      observadorDeVisibilidade.observe(footerRef.current)
+      observadorRevelacao.observe(footerRef.current)
     }
 
     let frameId
@@ -293,9 +266,6 @@ function Footer() {
         placeholder.rotation.x += 0.006
       }
 
-      // Mesma ideia da flutuação do modelo 3d da seção de fotos: depois
-      // que a garrafa assenta, ela não fica 100% parada, continua com um
-      // leve balanço/deriva contínuo (posição e rotação) baseado em senos.
       garrafas.forEach((item) => {
         if (!item.assentada) return
         const { modelo, raio, alturaDescanso, baseX, baseZ, atraso } = item
@@ -329,7 +299,7 @@ function Footer() {
 
     return () => {
       observadorDeTamanho.disconnect()
-      observadorDeVisibilidade.disconnect()
+      observadorRevelacao.disconnect()
       cancelAnimationFrame(frameId)
       controls.dispose()
       pmremGenerator.dispose()
