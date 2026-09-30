@@ -89,8 +89,8 @@ function App() {
 
   return (
     <div>
-      <div style={{ position: 'relative', height: '100vh' }}>
-        <div style={{ position: 'sticky', top: 0, height: '100vh', zIndex: 1 }}>
+      <div style={{ position: 'relative', height: '200dvh' }}>
+        <div style={{ position: 'sticky', top: 0, height: '100dvh', zIndex: 1 }}>
           <Comeco scale={scale} blur={blur} />
         </div>
       </div>

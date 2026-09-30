@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./cardapio.css";
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const PALAVRA = "Cardápio";
 const LETRA_ZOOM = "d";
@@ -311,8 +312,12 @@ export default function Cardapio() {
         const frameRight = frameRect.right - secaoRect.left;
         const frameHeight = frameRect.height;
 
+        const larguraSecao = secaoRect.width;
         const posicionar = (ref, { left, top }) => {
           if (!ref.current) return;
+          const margem = 6;
+          const w = ref.current.offsetWidth;
+          left = Math.min(Math.max(left, margem), larguraSecao - w - margem);
           ref.current.style.left = `${left}px`;
           ref.current.style.top = `${top}px`;
           ref.current.style.right = "auto";
@@ -372,7 +377,7 @@ export default function Cardapio() {
       trigger: containerRef.current,
       start: "top top",
       end: "bottom bottom",
-      scrub: 0.6, // dá a mesma sensação de "arrasto suave" do lerp manual (EASE)
+      scrub: 0.6,
       invalidateOnRefresh: true,
       onRefresh: () => {
         const origem = calcularOrigemZoomRef.current();
@@ -490,7 +495,10 @@ export default function Cardapio() {
                 onLoad={(e) => {
                   const { naturalWidth, naturalHeight } = e.target;
                   if (stageRef.current && naturalWidth && naturalHeight) {
-                    stageRef.current.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
+                    stageRef.current.style.setProperty(
+                      "--img-ratio",
+                      `${naturalWidth / naturalHeight}`
+                    );
                   }
                 }}
               />

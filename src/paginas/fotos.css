@@ -13,6 +13,7 @@
   top: 0;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -58,40 +59,6 @@
   .fotos-wrapper {
     min-height: 290vh;
   }
-
-  .fotos-palavra-linha {
-    font-size: clamp(26px, 9vw, 56px);
-  }
-
-  .carrossel-seta {
-    width: 46px;
-    height: 46px;
-    border-width: 3px;
-  }
-
-  .carrossel-seta svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .carrossel-item {
-    border-width: 3px;
-    box-shadow: 4px 4px 0 0 #000000;
-  }
-
-  .carrossel-legenda-topo {
-    margin-bottom: 16px;
-    max-width: 320px;
-  }
-
-  .carrossel-item.ativo {
-    box-shadow: 5px 5px 0 0 #d40000;
-  }
-
-  .carrossel-ver-mais {
-    font-size: 13px;
-    margin-top: 10px;
-  }
 }
 
 .fotos-carrossel {
@@ -106,6 +73,7 @@
 }
 
 .carrossel-conteudo {
+  --mask-h: clamp(300px, 38vw, 460px);
   position: relative;
   width: 100%;
   max-width: 1100px;
@@ -133,7 +101,7 @@
 .carrossel-trilho-mascara {
   position: relative;
   width: 100%;
-  height: clamp(300px, 38vw, 460px);
+  height: var(--mask-h);
 }
 
 .carrossel-trilho {
@@ -146,7 +114,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: clamp(150px, 23vw, 240px);
+  width: min(clamp(150px, 23vw, 240px), calc(var(--mask-h) * 0.66));
   aspect-ratio: 3 / 4;
   border-radius: 16px;
   overflow: hidden;
@@ -490,5 +458,150 @@
   .fotos-stat-texto {
     font-size: 10px;
     max-width: 100px;
+  }
+}
+
+@media (max-width: 900px) {
+  .fotos-palavra-linha {
+    font-size: clamp(28px, min(12.5vw, 11dvh), 64px);
+  }
+
+  .fotos-carrossel {
+    padding-bottom: 56px; 
+  }
+
+  .carrossel-legenda-topo {
+    margin-bottom: 18px;
+    max-width: 320px;
+  }
+
+  .carrossel-legenda-topo span {
+    font-size: 13px;
+  }
+
+  .carrossel-item {
+    border-width: 3px;
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 0 #000000;
+  }
+
+  .carrossel-item.ativo {
+    box-shadow: 5px 5px 0 0 #d40000;
+  }
+
+  .carrossel-seta {
+    width: 46px;
+    height: 46px;
+    border-width: 3px;
+    box-shadow: 4px 4px 0 0 #000000;
+  }
+
+  .carrossel-seta svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .carrossel-seta-esq {
+    left: calc(50% - 76px);
+  }
+
+  .carrossel-seta-dir {
+    right: calc(50% - 76px);
+  }
+
+  .carrossel-ver-mais {
+    font-size: 13px;
+    margin-top: 10px;
+  }
+
+  .fotos-diagonal-texto {
+    justify-content: flex-start;
+    gap: 0;
+    padding: max(56px, 9dvh) 16px 0;
+  }
+
+  .fotos-diagonal-titulo {
+    margin-top: 0;
+    font-size: clamp(26px, 8.4vw, 56px);
+    line-height: 1.05;
+  }
+
+  .marcas-marquee {
+    margin-top: 28px;
+  }
+
+  .marcas-logo {
+    height: clamp(36px, 10vw, 56px);
+  }
+
+  .fotos-diagonal-mulher {
+    width: auto;
+    max-width: 92%;
+    max-height: 52dvh;
+  }
+
+  .fotos-mulher-estrela {
+    width: 92%;
+    bottom: -8%;
+  }
+
+  .fotos-stats-coluna {
+    bottom: 28px;
+  }
+
+  .fotos-stats-esq {
+    left: 4vw;
+  }
+
+  .fotos-stats-dir {
+    right: 4vw;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .fotos-palavra-linha {
+    font-size: clamp(22px, 13dvh, 48px);
+  }
+
+  .fotos-carrossel {
+    padding-bottom: 50px;
+  }
+
+  .carrossel-conteudo {
+    --mask-h: max(170px, 44dvh);
+  }
+
+  .carrossel-legenda-topo {
+    margin-bottom: 10px;
+  }
+
+  .carrossel-legenda-topo span {
+    font-size: 12px;
+  }
+
+  .fotos-diagonal-texto {
+    padding-top: 14px;
+  }
+
+  .fotos-diagonal-titulo {
+    margin-top: 0;
+    font-size: clamp(18px, 5.5dvh, 40px);
+  }
+
+  .marcas-marquee {
+    margin-top: 10px;
+  }
+
+  .marcas-logo {
+    height: clamp(24px, 9dvh, 44px);
+  }
+
+  .fotos-diagonal-mulher {
+    width: auto;
+    max-height: 58dvh;
+  }
+
+  .fotos-stat-numero {
+    font-size: clamp(18px, 6dvh, 30px);
   }
 }

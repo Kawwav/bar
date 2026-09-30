@@ -15,7 +15,28 @@ const COMBOS_ITENS = [
   { arquivo: 'combos/combo3.jpg', arquivoHover: 'combos/combovermelho3.jpg', nome: 'Balde Sol', preco: 'R$ 65' },
 ]
 
-const ITENS_VISIVEIS = 3
+const ITENS_VISIVEIS_DESKTOP = 3
+const ITENS_VISIVEIS_MOBILE = 2
+const QUERY_DESKTOP = '(min-width: 901px)'
+const SWIPE_MIN_PX = 40
+
+function useItensVisiveis() {
+  const [qtd, setQtd] = useState(() =>
+    typeof window !== 'undefined' && !window.matchMedia(QUERY_DESKTOP).matches
+      ? ITENS_VISIVEIS_MOBILE
+      : ITENS_VISIVEIS_DESKTOP,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia(QUERY_DESKTOP)
+    const atualizar = () =>
+      setQtd(mq.matches ? ITENS_VISIVEIS_DESKTOP : ITENS_VISIVEIS_MOBILE)
+    mq.addEventListener('change', atualizar)
+    return () => mq.removeEventListener('change', atualizar)
+  }, [])
+
+  return qtd
+}
 
 const DURACAO_SAIDA = 700
 const DURACAO_ENTRADA = 850
@@ -34,7 +55,12 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
   const ultimoItensRef = useRef(itens)
   const timeoutRef = useRef(null)
 
-  const indiceMax = Math.max(itensExibidos.length - ITENS_VISIVEIS, 0)
+  const itensVisiveis = useItensVisiveis()
+  const toqueInicioRef = useRef(null)
+
+  const indiceMax = Math.max(itensExibidos.length - itensVisiveis, 0)
+
+  const indiceAtual = Math.min(indice, indiceMax)
 
   useEffect(() => {
     if (itens === ultimoItensRef.current) return
@@ -55,7 +81,6 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
     }, DURACAO_SAIDA)
   }, [itens])
 
-  // Limpa qualquer timeout pendente quando o carrossel desmontar
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current)
   }, [])
@@ -69,20 +94,32 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
 
       const gap = parseFloat(window.getComputedStyle(track).columnGap || '0')
       const passo = primeiroItem.getBoundingClientRect().width + gap
-      track.style.transform = `translateX(-${indice * passo}px)`
+      track.style.transform = `translateX(-${indiceAtual * passo}px)`
     }
 
     atualizarPosicao()
     window.addEventListener('resize', atualizarPosicao)
     return () => window.removeEventListener('resize', atualizarPosicao)
-  }, [indice, itensExibidos])
+  }, [indiceAtual, itensExibidos, itensVisiveis])
 
   const irParaSlideAnterior = () => {
-    setIndice((atual) => Math.max(atual - 1, 0))
+    setIndice(Math.max(indiceAtual - 1, 0))
   }
 
   const irParaProximoSlide = () => {
-    setIndice((atual) => Math.min(atual + 1, indiceMax))
+    setIndice(Math.min(indiceAtual + 1, indiceMax))
+  }
+
+  const aoTocarInicio = (e) => {
+    toqueInicioRef.current = e.touches[0].clientX
+  }
+
+  const aoTocarFim = (e) => {
+    if (toqueInicioRef.current === null || fase !== 'idle') return
+    const dx = e.changedTouches[0].clientX - toqueInicioRef.current
+    toqueInicioRef.current = null
+    if (dx <= -SWIPE_MIN_PX) irParaProximoSlide()
+    else if (dx >= SWIPE_MIN_PX) irParaSlideAnterior()
   }
 
   const classeItem = (i) => {
@@ -93,7 +130,12 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
 
   return (
     <>
-      <div className="mais-conteudo-carrossel">
+      <div
+        className="mais-conteudo-carrossel"
+        style={{ '--visiveis': itensVisiveis }}
+        onTouchStart={aoTocarInicio}
+        onTouchEnd={aoTocarFim}
+      >
         <div className="mais-conteudo-carrossel-track" ref={trackRef}>
           {itensExibidos.map(({ arquivo, arquivoHover, nome, preco }, i) => (
             <div
@@ -129,7 +171,7 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
           type="button"
           className="mais-conteudo-carrossel-seta"
           onClick={irParaSlideAnterior}
-          disabled={indice === 0 || fase !== 'idle'}
+          disabled={indiceAtual === 0 || fase !== 'idle'}
           aria-label={labelAnterior}
         >
           <svg
@@ -146,7 +188,7 @@ function Carrossel({ itens, labelAnterior, labelProximo }) {
           type="button"
           className="mais-conteudo-carrossel-seta"
           onClick={irParaProximoSlide}
-          disabled={indice >= indiceMax || fase !== 'idle'}
+          disabled={indiceAtual >= indiceMax || fase !== 'idle'}
           aria-label={labelProximo}
         >
           <svg

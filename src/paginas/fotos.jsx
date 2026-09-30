@@ -221,7 +221,8 @@ export default function Fotos() {
 
         const tamanho = caixa.getSize(new THREE.Vector3())
         const maiorLado = Math.max(tamanho.x, tamanho.y, tamanho.z)
-        if (maiorLado > 0) escalaBase = 2.2 / maiorLado
+        maiorLadoModelo = maiorLado
+        if (maiorLado > 0) escalaBase = (2.2 / maiorLado) * fatorModelo
 
         pivo.scale.setScalar(escalaBase)
         pivo.add(modelo)
@@ -233,21 +234,56 @@ export default function Fotos() {
       (erro) => console.error('Erro ao carregar camera.glb:', erro),
     )
 
-    const trajeto = new THREE.CatmullRomCurve3(
-      [
-        new THREE.Vector3(5.2, -0.9, -1.6),
-        new THREE.Vector3(3.1, -0.45, -0.4),
-        new THREE.Vector3(1.5, -0.1, 0.5),
-        new THREE.Vector3(0.55, 0.15, 0.9),
-        new THREE.Vector3(0.0, -0.05, 0.35),
-        new THREE.Vector3(-0.5, 0.25, 0.8),
-        new THREE.Vector3(-1.7, 0.55, 0.25),
-        new THREE.Vector3(-2.6, 0.8, 0.0),
-      ],
-      false,
-      'catmullrom',
-      0.6,
-    )
+    const ASPECTO_REFERENCIA = 1.6
+    const MEIA_LARGURA_MODELO = 1.1 
+    const TAN_FOV = Math.tan(THREE.MathUtils.degToRad(20)) 
+
+    const PONTOS_TRAJETO = [
+      [5.2, -0.9, -1.6],
+      [3.1, -0.45, -0.4],
+      [1.5, -0.1, 0.5],
+      [0.55, 0.15, 0.9],
+      [0.0, -0.05, 0.35],
+      [-0.5, 0.25, 0.8],
+      [-1.7, 0.55, 0.25],
+      [-2.6, 0.8, 0.0],
+    ]
+
+    let fatorTela = 1
+    let fatorModelo = 1
+    let maiorLadoModelo = 0
+    let trajeto = null
+
+    const construirTrajeto = () => {
+      const aspecto = camera.aspect
+      const estreita = fatorTela < 1
+
+      const limiteEsq = Math.max(
+        0.9 * TAN_FOV * 5.5 * aspecto - MEIA_LARGURA_MODELO * fatorModelo,
+        0.2,
+      )
+
+      const inicioMin =
+        TAN_FOV * 7.1 * aspecto + MEIA_LARGURA_MODELO * fatorModelo + 0.1
+
+      const pontos = PONTOS_TRAJETO.map(([x, y, z], i) => {
+        let nx = x * fatorTela
+        if (estreita) {
+          if (i === 0) nx = Math.max(nx, inicioMin)
+          else if (nx < -limiteEsq) nx = -limiteEsq
+        }
+        return new THREE.Vector3(nx, y, z)
+      })
+      return new THREE.CatmullRomCurve3(pontos, false, 'catmullrom', 0.6)
+    }
+
+    const atualizarEscalaPorTela = () => {
+      fatorTela = Math.min(1, Math.max(0.25, camera.aspect / ASPECTO_REFERENCIA))
+      fatorModelo = Math.min(1, fatorTela * 1.2)
+      if (maiorLadoModelo > 0) escalaBase = (2.2 / maiorLadoModelo) * fatorModelo
+      trajeto = construirTrajeto()
+    }
+    atualizarEscalaPorTela()
 
     const posAtual = new THREE.Vector3()
     const alvoOlhar = new THREE.Vector3()
@@ -365,10 +401,10 @@ export default function Fotos() {
       if (setaEsqRef.current && setaDirRef.current) {
         const abrindo = exitSuave
         const fechado = 1 - abrindo
-        const REPOUSO_Y_SETA = 14 // px — distancia das setas
-        const DESLOC_X_SETA = 130 // px — quão perto do centro elas partem
-        const DESLOC_Y_SETA = 90 // px — quanto mais abaixo elas partem
-        const ROTACAO_SETA = 220 // graus percorridos até a posição final
+        const REPOUSO_Y_SETA = 14 
+        const DESLOC_X_SETA = 130 
+        const DESLOC_Y_SETA = 90 
+        const ROTACAO_SETA = 220 
 
         setaEsqRef.current.style.opacity = abrindo
         setaEsqRef.current.style.pointerEvents = carrosselInterativo ? 'auto' : 'none'
@@ -434,7 +470,7 @@ export default function Fotos() {
     let posXMarcas = 0
     let ultimoInstanteMarcas = null
     let animIdMarcas
-    const VELOCIDADE_MARCAS = 34 // px/s no repouso
+    const VELOCIDADE_MARCAS = 34 
 
     const aoRolarRodaMarcas = (evento) => {
       direcaoAlvoMarcas = evento.deltaY > 0 ? -1 : 1
@@ -646,6 +682,7 @@ export default function Fotos() {
       camera.aspect = largura / altura
       camera.updateProjectionMatrix()
       renderer.setSize(largura, altura)
+      atualizarEscalaPorTela()
     }
     window.addEventListener('resize', aoRedimensionar)
 
@@ -702,10 +739,10 @@ export default function Fotos() {
 
                   const ativo = rel === 0
                   const distancia = Math.abs(rel)
-                  const FAN_X_VW = 9 // afastamento horizontal por passo
-                  const FAN_Y_VW = 3 // quanto desce por passo
-                  const FAN_ROT_DEG = 9 // rotação por passo
-                  const MAX_VISIVEL = 2 // quantas fotos de cada lado ficam visíveis
+                  const FAN_X_VW = 9 
+                  const FAN_Y_VW = 3 
+                  const FAN_ROT_DEG = 9 
+                  const MAX_VISIVEL = 2 
 
                   const deslocX = rel * FAN_X_VW
                   const deslocY = distancia * FAN_Y_VW

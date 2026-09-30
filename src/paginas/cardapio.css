@@ -2,9 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@900&display=swap');
 
+:root {
+  --frase-fs: clamp(44px, min(26vw, 16vh), 160px);
+  --alt-max: max(120px, calc(100vh - var(--frase-fs) * 1.35 - 130px));
+}
+
 .cardapio-scroll-container {
   position: relative;
   height: 400vh;
+  height: 400dvh;
+  margin-top: -100vh; 
+  margin-top: -100dvh; 
+  z-index: 2;         
 }
 
 .cardapio-section {
@@ -12,6 +21,7 @@
   top: 0;
   z-index: 10;
   height: 100vh;
+  height: 100dvh;
   width: 100%;
   background: #FFF4E2;
   display: flex;
@@ -26,7 +36,7 @@
   text-transform: uppercase;
   text-align: center;
   width: 100%;
-  font-size: clamp(90px, 30vw, 460px);
+  font-size: clamp(90px, min(30vw, 60vh), 460px);
   letter-spacing: 0.02em;
   margin: 0;
   white-space: nowrap;
@@ -58,33 +68,20 @@
 .cardapio-imagem-stage {
   position: absolute;
   inset: 0;
-  top: 50px;
+  top: max(0px, calc(var(--frase-fs) * 1.35 - 100px));
   margin: auto;
   z-index: 20;
-  width: min(90vw, 900px);
-  max-height: 306vh;
+  --img-ratio: 1.5;
+  --stage-w: min(90vw, 900px, calc(var(--alt-max) * var(--img-ratio)));
+  width: var(--stage-w);
+  height: calc(var(--stage-w) / var(--img-ratio));
   transform-origin: center;
   will-change: transform, opacity;
 }
 
-@media (max-height: 820px) {
-  .cardapio-imagem-stage {
-    top: -60px;
-    max-height: 28vh;
-  }
-}
-
-@media (max-height: 650px) {
-  .cardapio-imagem-stage {
-    top: -80px;
-    max-height: 22vh;
-  }
-}
-
-@media (max-width: 900px) {
-  .cardapio-imagem-stage {
-    top: 26vh;
-    bottom: auto;
+@supports (height: 100dvh) {
+  :root {
+    --alt-max: max(120px, calc(100dvh - var(--frase-fs) * 1.35 - 130px));
   }
 }
 
@@ -117,7 +114,7 @@
   text-align: center;
   font-family: 'Prompt', sans-serif;
   font-weight: 900;
-  font-size: clamp(56px, 26vw, 160px);
+  font-size: var(--frase-fs);
   line-height: 0.9;
   color: #000000;
   text-transform: uppercase;
@@ -152,6 +149,7 @@
   gap: clamp(14px, 4vw, 60px);
   width: min(92vw, 950px);
   flex-wrap: wrap;
+  row-gap: 6px;
   transform: translate(-50%, 0);
   opacity: 0;
   pointer-events: none;
@@ -161,7 +159,7 @@
 .cardapio-nav-item {
   font-family: 'Prompt', sans-serif;
   font-weight: 900;
-  font-size: clamp(13px, 3.4vw, 40px);
+  font-size: clamp(12px, min(3.4vw, 5vh), 40px);
   line-height: 1;
   color: #000000;
   text-transform: uppercase;
@@ -209,11 +207,11 @@
 }
 
 .cardapio-selo-estrela {
-  width: clamp(104px, 19vw, 200px);
-  height: clamp(104px, 19vw, 200px);
+  width: clamp(84px, 19vw, 200px);
+  height: clamp(84px, 19vw, 200px);
   background: #d40000;
-  padding: 0 clamp(10px, 2.4vw, 24px);
-  font-size: clamp(11px, 2.1vw, 22px);
+  padding: 0 clamp(8px, 2.4vw, 24px);
+  font-size: clamp(10px, 2.1vw, 22px);
   clip-path: polygon(
     50% 0%, 61% 17%, 79% 8%, 82% 28%, 100% 33%,
     92% 50%, 100% 67%, 82% 72%, 79% 92%, 61% 83%,
@@ -233,12 +231,12 @@
 }
 
 .cardapio-selo-fita {
-  width: clamp(128px, 22vw, 220px);
-  height: clamp(48px, 7.8vw, 78px);
+  width: clamp(104px, 22vw, 220px);
+  height: clamp(40px, 7.8vw, 78px);
   background: #FFC400;
   color: #000000;
-  padding: 0 clamp(10px, 2.4vw, 24px);
-  font-size: clamp(11px, 2.1vw, 22px);
+  padding: 0 clamp(8px, 2.4vw, 24px);
+  font-size: clamp(10px, 2.1vw, 22px);
   clip-path: polygon(
     8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%
   );
