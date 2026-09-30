@@ -527,26 +527,26 @@
   }
 
   .marcas-marquee {
-    margin-top: 28px;
+    margin-top: 60px;
   }
 
   .marcas-logo {
-    height: clamp(36px, 10vw, 56px);
+    height: clamp(76px, 22vw, 120px);
   }
 
   .fotos-diagonal-mulher {
     width: auto;
-    max-width: 92%;
-    max-height: 52dvh;
+    max-width: 200%;
+    max-height: 100dvh;
   }
 
   .fotos-mulher-estrela {
-    width: 92%;
-    bottom: -8%;
+    width: 100%;
+    bottom: -4%;
   }
 
   .fotos-stats-coluna {
-    bottom: 28px;
+    bottom: 350px;
   }
 
   .fotos-stats-esq {
@@ -589,16 +589,20 @@
   }
 
   .marcas-marquee {
-    margin-top: 10px;
+    margin-top: 25px;
   }
 
   .marcas-logo {
-    height: clamp(24px, 9dvh, 44px);
+    height: clamp(48px, 18dvh, 88px);
   }
 
   .fotos-diagonal-mulher {
     width: auto;
-    max-height: 58dvh;
+    max-height: 110dvh;
+  }
+
+  .fotos-stats-coluna {
+    bottom: 70px;
   }
 
   .fotos-stat-numero {
